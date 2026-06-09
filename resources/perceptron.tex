@@ -1,0 +1,31 @@
+\begin{figure}[h]
+\centering
+    \begin{tikzpicture}[shorten >=1pt]
+        \tikzstyle{unit}=[draw,shape=circle,minimum size=1.15cm]
+
+        \node[unit](x0) at (0,4){$x_0$};
+        \node[weights](w0) at (2,3.7){$w_0$};
+        \node[unit](x1) at (0,2.5){$x_1$};
+        \node[weights](w1) at (2, 2.7){$w_1$};
+        \node[unit](xd) at (0,1){$x_2$};
+        \node[weights](w1) at (2, 1.4){$w_2$};
+        
+        \node[unit](y1) at (4,2.5){$\sum$};
+        \node[unit] (step) at (6,2.5) {$\frac{1}{|x|}$};
+        \node[](yp) at (8, 2.5){$\widehat{y}$};
+
+        \draw[->] (x0) -- (y1);
+        
+        \draw[->] (x1) -- (y1);
+
+        \draw[->] (xd) -- (y1);
+
+        \draw[->] (y1) -- (step);
+
+        \draw[->] (step) -- (yp);
+        
+\end{tikzpicture}
+
+\caption{Visual representation of Perceptron unit}
+\label{fig:perceptron}
+\end{figure}

@@ -1,0 +1,61 @@
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[shorten >=1pt]
+            \tikzstyle{unit}=[draw,shape=circle,minimum size=1.15cm]
+    
+            \node[unit](x0) at (0,4){$x_0$};
+            \node[unit](x1) at (0,2.5){$x_1$};
+            \node[unit](xd) at (0,1){$x_D$};
+            
+            \node[unit](y1) at (3,4){$h_0$};
+            \node[unit](y2) at (3,2.5){$h_1$};
+            \node[unit](y3) at (3,1){$h_d$};
+        
+            \node[unit](o1) at (6,4){$o_0$};
+            \node[unit](o2) at (6,2.5){$o_1$};
+            \node[unit](o3) at (6,1){$o_d$}
+    
+            \node[unit](yS) at (9,2.5){$\sum$};
+            \node[unit] (step) at (12,2.5) {$\frac{1}{1-e^-x}$};
+            \node[](yp) at (15, 2.5){$\widehat{y}$};
+            
+            \draw[->] (x0) -- (y1);
+            \draw[->] (x0) -- (y2);
+            \draw[->] (x0) -- (y3);
+            
+            
+            \draw[->] (x1) -- (y1);
+            \draw[->] (x1) -- (y2);
+            \draw[->] (x1) -- (y3);
+            
+    
+            \draw[->] (xd) -- (y1);
+            \draw[->] (xd) -- (y2);
+            \draw[->] (xd) -- (y3);
+            
+    
+            \draw[->] (y1) -- (o1);
+            \draw[->] (y1) -- (o2);
+            \draw[->] (y1) -- (o3);
+    
+            \draw[->] (y2) -- (o1);
+            \draw[->] (y2) -- (o2);
+            \draw[->] (y2) -- (o3);
+    
+            \draw[->] (y3) -- (o1);
+            \draw[->] (y3) -- (o2);
+            \draw[->] (y3) -- (o3);
+    
+            \draw[->] (o1) -- (yS);
+            \draw[->] (o2) -- (yS);
+            \draw[->] (o3) -- (yS);
+            
+            \draw[->] (yS) -- (step);
+            
+    
+            \draw[->] (step) -- (yp);
+            
+    \end{tikzpicture}    
+\caption{Visual representation of Multilayer Perceptron (MLP)}
+\label{fig:mlp}
+\end{figure}

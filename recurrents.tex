@@ -1,0 +1,89 @@
+\documentclass{article}
+\usepackage{pgfplots}
+\usepgfplotslibrary{external}
+\usepackage[dvipsnames]{xcolor}
+\tikzexternalize
+\usepackage{fullpage}
+\usepackage{ulem}
+\usepackage{subcaption}
+\usepackage{amssymb, amsmath, changepage,pgfplots, darkmode,tabularx,siunitx}
+\usepackage{algorithm}
+\enabledarkmode
+\usepackage{makecell}
+\usepackage{amsfonts}
+\pgfplotsset{compat = newest}
+
+
+\usepackage{tikz}
+\usetikzlibrary{shadings}
+\usetikzlibrary{calc,arrows.meta}
+\usepackage[most]{tcolorbox}
+\definecolor{pag}{HTML}{293133}
+	\usepgfplotslibrary{colormaps,patchplots}
+\color{white}
+
+\tikzset{basic/.style={draw,text width=1em,text badly centered}}
+\tikzset{input/.style={basic,circle}}
+\tikzset{weights/.style={basic,rectangle}}
+\tikzset{functions/.style={basic,circle}}
+
+\title{Machine Learning Notes \\ Recurrent Neural Networks}
+\author{Vitor Negromonte Cabral de Oliveira}
+
+\date{June 2025}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+\tableofcontents
+\newpage
+\section{Introdução à Redes Neurais Recorrentes}
+
+Redes neurais tradicionais (MLPs), funcionam, de modo geral, como uma rede de \textit{um para um}, onde, por exemplo, envia-se uma imagem para o modelo e recebe-se um vetor de probabilidades para aquela imagem. Não obstante, é notório que essa situação é limitante quanto ao funcionamento de sistemas dessa natureza para demais cenários, onde, por exemplo, precisamos processar sequências de determinada natureza.
+
+Neste cenário, temos as redes neurais recorrentes. Uma rede recorrente possui um estado interno e recebe um vetor $x_t$, ou seja, um vetor $x$ em um momento qualquer $_t$ e modifica o seu estado interno com uma função da entrada $x$ ao longo do tempo.
+
+Matematicamente falando, uma rede recorrente modela o estado atual de um sistema como uma função $f_{\theta}$ do estado anterior e da entrada atual:
+
+\begin{equation}
+    h_t = f_{\theta}(h_{t-1}, x_t)
+\end{equation}
+
+Onde:
+
+\begin{itemize}
+    \item $h_t$ é o estado atual
+    \item $f_{\theta}$ é uma função fixa com parâmetros $\theta$
+    \item $h_{t-1}$ é o estado anterior
+    \item $x_t$ é o vetor de entrada atual
+\end{itemize}
+
+Em mais detalhes, podemos aprofundar a rede como:
+
+
+\begin{equation}
+    h_t = tanh(W_{hh}h_{t-1}+W_{xh}x_{t}+b_h)
+\end{equation}
+Onde:
+\begin{itemize}
+    \item $W_{hh}$ É a matriz de pesos que conecta o estado oculto anterior ($h_{t-1}$) ao estado oculto atual ($h_t$). Esses pesos ditam o quão fortemente a informação do passado influencia o presente.
+    \item $W_{xh}$ É a matriz de pesos que conecta a entrada atual ($x_t$) ao estado oculto atual ($h_t$). Esses pesos determinam a importância da entrada corrente na atualização do estado.
+    \item $b_h$ é o viés para estado oculto. Ele permite que a rede aprenda um deslocamento na ativação.
+    \item $tanh(^.)$ é a função de ativação não-linear.
+\end{itemize}
+
+
+Além do estado oculto, uma RNN também pode produzir uma saída ($y_t$) em cada passo de tempo.  Essa saída também é tipicamente uma função do estado oculto atual:
+
+\begin{equation}
+    y_t = W_{hy}h_t + b_y
+\end{equation}
+
+Onde:
+\begin{itemize}
+    \item $W_{hy}$ É a matriz de pesos que mapeia o estado oculto atual ($h_t$) para a saída ($y_t$)
+    \item $b_y$ É o vetor de bias para a saída.
+\end{itemize}
+\end{document}

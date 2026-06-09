@@ -1,0 +1,10 @@
+all:
+	pdflatex -shell-escape world_models.tex
+	bibtex world_models
+	pdflatex -shell-escape world_models.tex
+	pdflatex -shell-escape world_models.tex
+
+clean:
+	rm -f world_models.aux world_models.log world_models.toc world_models.out world_models.md5 world_models.bbl world_models.blg
+
+.PHONY: all clean

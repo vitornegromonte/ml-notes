@@ -1,0 +1,11 @@
+all:
+	pdflatex main-en-tufte.tex
+	pdflatex main-en-tufte.tex
+	pdflatex world_models.tex
+	pdflatex world_models.tex
+
+clean:
+	rm -f main-en-tufte.aux main-en-tufte.log main-en-tufte.toc main-en-tufte.out main-en-tufte.md5
+	rm -f world_models.aux world_models.log world_models.toc world_models.out world_models.md5
+
+.PHONY: all clean
