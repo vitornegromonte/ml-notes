@@ -40,7 +40,7 @@
 \maketitle
 
 \begin{abstract}
-    This chapter develops the mathematical framework for Recurrent Neural Networks (RNNs), which are designed to process sequential data. We formalise the RNN architecture, derive the forward propagation equations, and present backpropagation through time (BPTT). The problems of vanishing and exploding gradients are analysed, and the Long Short‑Term Memory (LSTM) and Gated Recurrent Unit (GRU) are introduced as effective solutions.
+    This chapter develops the mathematical framework for Recurrent Neural Networks (RNNs), which are designed to process sequential data. We formalise the RNN architecture, derive the forward propagation equations, and present backpropagation through time (BPTT). The problems of vanishing and exploding gradients are analysed, and the Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU) are introduced as effective solutions.
 \end{abstract}
 
 \newpage
@@ -56,20 +56,20 @@ Before diving into recurrent architectures, we must establish a rigorous framewo
 \subsection{Definition and Notation}
 
 \begin{defn}[Sequence]
-    A \textbf{sequence} of length $T$ is an ordered tuple $\mathbf{x}_{1:T} = (\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_T)$, where each element $\mathbf{x}_t$ belongs to a set $\mathcal{X}$ (the \textbf{observation space}). When $\mathcal{X} \subseteq \mathbb{R}^d$, we speak of a \textbf{real‑valued vector sequence}. 
+    A \textbf{sequence} of length $T$ is an ordered tuple $\mathbf{x}_{1:T} = (\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_T)$, where each element $\mathbf{x}_t$ belongs to a set $\mathcal{X}$ (the \textbf{observation space}). When $\mathcal{X} \subseteq \mathbb{R}^d$, we speak of a \textbf{real-valued vector sequence}. 
     \begin{itemize}
         \item If $T$ is finite, the sequence is \textbf{finite}; if $T = \infty$, it is \textbf{infinite}.
-        \item When the indices $t$ are discrete (e.g., $t \in \mathbb{N}$), we have a \textbf{discrete‑time sequence}. Continuous‑time sequences are indexed by $t \in \mathbb{R}$ but are less common in machine learning.
+        \item When the indices $t$ are discrete (e.g., $t \in \mathbb{N}$), we have a \textbf{discrete-time sequence}. Continuous-time sequences are indexed by $t \in \mathbb{R}$ but are less common in machine learning.
     \end{itemize}
 \end{defn}
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[scale=0.8]
-    \begin{axis}[width=4cm, height=2.5cm, xlabel=$t$, ylabel=$x_t$, domain=0:10, samples=100, axis lines=middle, enlargelimits]
+\begin{tikzpicture}[scale=1]
+    \begin{axis}[width=5cm, height=4.5cm, xlabel=$t$, ylabel=$x_t$, domain=0:10, samples=100, axis lines=middle, enlargelimits]
         \addplot[wp-primary, thick] {sin(deg(x)) + 0.2*rand};
     \end{axis}
-    \caption{A real‑valued discrete‑time sequence (time series).}
+    \caption{A real-valued discrete-time sequence (time series).}
 \end{tikzpicture}
 \end{marginfigure}
 
@@ -97,31 +97,31 @@ A sequence can be modelled as a \textbf{stochastic process} $\{X_t\}_{t \in \mat
     \end{enumerate}
 \end{defn}
 
-Stationarity simplifies modeling because the statistical properties do not change over time. Many real‑world sequences are non‑stationary (e.g., financial returns have time‑varying volatility).
+Stationarity simplifies modeling because the statistical properties do not change over time. Many real-world sequences are non-stationary (e.g., financial returns have time-varying volatility).
 
-\subsection{Auto‑correlation and Memory}
+\subsection{Auto-correlation and Memory}
 
 A key characteristic of sequences is that observations are not independent; they exhibit \textbf{temporal dependence}.
 
-\begin{defn}[Auto‑correlation Function (ACF)]
-    For a weakly stationary sequence with variance $\sigma^2$, the auto‑correlation at lag $\tau$ is
+\begin{defn}[Auto-correlation Function (ACF)]
+    For a weakly stationary sequence with variance $\sigma^2$, the auto-correlation at lag $\tau$ is
     \[
     \rho(\tau) = \frac{\operatorname{Cov}(X_t, X_{t+\tau})}{\sigma^2}.
     \]
     The ACF satisfies $\rho(0)=1$, $|\rho(\tau)|\le 1$, and $\rho(\tau)=\rho(-\tau)$.
 \end{defn}
 
-If $\rho(\tau)$ decays slowly (e.g., $\rho(\tau) \sim e^{-\alpha \tau}$ or power‑law), the sequence has \textbf{long‑term memory}. Short‑memory processes have $\rho(\tau) \to 0$ exponentially fast.
+If $\rho(\tau)$ decays slowly (e.g., $\rho(\tau) \sim e^{-\alpha \tau}$ or power-law), the sequence has \textbf{long-term memory}. Short-memory processes have $\rho(\tau) \to 0$ exponentially fast.
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[scale=0.7]
-    \begin{axis}[width=4cm, height=2.5cm, xlabel=$\tau$, ylabel=$\rho(\tau)$, domain=0:10, samples=50, axis lines=middle, enlargelimits]
+\begin{tikzpicture}[scale=1.2]
+    \begin{axis}[width=5cm, height=4.5cm, xlabel=$\tau$, ylabel=$\rho(\tau)$, domain=0:10, samples=50, axis lines=middle, enlargelimits]
         \addplot[wp-primary, thick] {exp(-0.5*x)};
         \addplot[wp-accent, thick] {0.8^abs(x)};
         \legend{fast decay, slow decay};
     \end{axis}
-    \caption{Auto‑correlation functions: exponential (fast) vs. power‑law (slow).}
+    \caption{Auto-correlation functions: exponential (fast) vs. power-law (slow).}
 \end{tikzpicture}
 \end{marginfigure}
 
@@ -130,30 +130,30 @@ If $\rho(\tau)$ decays slowly (e.g., $\rho(\tau) \sim e^{-\alpha \tau}$ or power
 A fundamental simplification for sequence modeling is the Markov assumption: the future depends only on a finite past.
 
 \begin{defn}[Markov Chain]
-    A discrete‑time stochastic process $\{X_t\}$ is a \textbf{Markov chain of order $k$} if for all $t$,
+    A discrete-time stochastic process $\{X_t\}$ is a \textbf{Markov chain of order $k$} if for all $t$,
     \[
     P(X_t = x_t \mid X_{1:t-1} = x_{1:t-1}) = P(X_t = x_t \mid X_{t-k:t-1} = x_{t-k:t-1}),
     \]
-    i.e., the conditional distribution of the next state depends only on the $k$ most recent states. For $k=1$, it is a \textbf{first‑order Markov chain}.
+    i.e., the conditional distribution of the next state depends only on the $k$ most recent states. For $k=1$, it is a \textbf{first-order Markov chain}.
 \end{defn}
 
 \begin{thm}[Markov Chain Decomposition]
-    For a first‑order Markov chain, the joint distribution factorizes as
+    For a first-order Markov chain, the joint distribution factorizes as
     \[
     P(X_{1:T} = x_{1:T}) = P(X_1 = x_1) \prod_{t=2}^{T} P(X_t = x_t \mid X_{t-1} = x_{t-1}).
     \]
 \end{thm}
 
-The Markov property is the theoretical backbone of many sequence models, including RNNs (which approximate an infinite‑order Markov chain via hidden states).
+The Markov property is the theoretical backbone of many sequence models, including RNNs (which approximate an infinite-order Markov chain via hidden states).
 
 \subsection{Deep Dive: Markov Models}
 
-\paragraph{Discrete‑Time Markov Chains}
-A discrete‑time stochastic process $\{X_t\}_{t=1}^\infty$ with state space $\mathcal{S}$ (finite or countable) is a \textbf{Markov chain} if for all $t \ge 2$ and all $s_1,\dots,s_t \in \mathcal{S}$,
+\paragraph{Discrete-Time Markov Chains}
+A discrete-time stochastic process $\{X_t\}_{t=1}^\infty$ with state space $\mathcal{S}$ (finite or countable) is a \textbf{Markov chain} if for all $t \ge 2$ and all $s_1,\dots,s_t \in \mathcal{S}$,
 \[
 P(X_t = s_t \mid X_{t-1}=s_{t-1}, \dots, X_1=s_1) = P(X_t = s_t \mid X_{t-1}=s_{t-1}).
 \]
-The chain is \textbf{time‑homogeneous} if the transition probability does not depend on $t$:
+The chain is \textbf{time-homogeneous} if the transition probability does not depend on $t$:
 \[
 P(X_t = j \mid X_{t-1}=i) = T_{ij}, \quad \forall t,
 \]
@@ -161,24 +161,44 @@ where $\mathbf{T}$ is the \textbf{transition matrix} with rows summing to $1$.
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[node distance=1.2cm, thick, >=stealth]
-    \node[draw, circle, wp-primary] (A) {A};
-    \node[draw, circle, wp-primary, right of=A] (B) {B};
-    \node[draw, circle, wp-primary, below of=A] (C) {C};
-    \draw[->] (A) to[out=30,in=150] node[above] {$0.7$} (B);
-    \draw[->] (A) to[out=-30,in=-150] node[left] {$0.3$} (C);
-    \draw[->] (B) to[out=210,in=30] node[right] {$0.5$} (C);
-    \draw[->] (C) to[out=150,in=-90] node[below] {$1.0$} (A);
+% Garanta que você tem \usetikzlibrary{positioning} no seu preâmbulo
+\begin{tikzpicture}[
+    node distance=1.5cm and 1.5cm, % Ajustado o espaçamento para caber na margem
+    thick, 
+    >=stealth,
+    % Estilo global para os estados da cadeia
+    state/.style={draw, circle, wp-primary, minimum size=0.7cm, font=\bfseries}
+]
+    % Definição dos nós (Estados) usando a sintaxe moderna 'positioning'
+    \node[state] (A) {A};
+    \node[state, right=of A] (B) {B};
+    \node[state, below=of A] (C) {C};
+    
+    % Transições (Setas e Probabilidades) com curvas calibradas
+    % De A para B (por cima)
+    \draw[->, wp-text] (A) to[bend left=30] node[above, font=\small] {$0.7$} (B);
+    
+    % De A para C (descendo em arco sutil)
+    \draw[->, wp-text] (A) to[bend right=20] node[left, font=\small] {$0.3$} (C);
+    
+    % De B para C (descendo diagonalmente)
+    \draw[->, wp-text] (B) to[bend left=15] node[right, font=\small] {$0.5$} (C);
+    
+    % De C para A (subindo em arco compensado)
+    \draw[->, wp-text] (C) to[bend right=40] node[xshift=-2pt, left, font=\small] {$1.0$} (A);
+    
 \end{tikzpicture}
-\caption{A three‑state Markov chain with transition probabilities.}
+\caption{A three-state Markov chain with transition probabilities.}
+\label{fig:markov_chain}
 \end{marginfigure}
+
 
 \begin{defn}[Order $k$ Markov Chain]
     A process satisfies the \textbf{Markov property of order $k$} if
     \[
     P(X_t \mid X_{1:t-1}) = P(X_t \mid X_{t-k:t-1}).
     \]
-    The state can be augmented to $\tilde{X}_t = (X_{t-k+1}, \dots, X_t)$, which forms a first‑order chain on a larger state space of size $|\mathcal{S}|^k$.
+    The state can be augmented to $\tilde{X}_t = (X_{t-k+1}, \dots, X_t)$, which forms a first-order chain on a larger state space of size $|\mathcal{S}|^k$.
 \end{defn}
 
 \paragraph{Key Properties of Markov Chains}
@@ -189,12 +209,12 @@ where $\mathbf{T}$ is the \textbf{transition matrix} with rows summing to $1$.
 \end{itemize}
 
 \paragraph{Hidden Markov Models (HMMs)}
-In many real‑world sequences, the underlying state is not directly observable. HMMs extend Markov chains by assuming that each state $X_t$ emits an observation $O_t$ through a known emission distribution.
+In many real-world sequences, the underlying state is not directly observable. HMMs extend Markov chains by assuming that each state $X_t$ emits an observation $O_t$ through a known emission distribution.
 
 \begin{defn}[Hidden Markov Model]
     An HMM is a doubly stochastic process $(X_t, O_t)_{t=1}^T$ where:
     \begin{enumerate}
-        \item $\{X_t\}$ is a time‑homogeneous Markov chain with state space $\mathcal{S}$, initial distribution $\boldsymbol{\pi}$, and transition matrix $\mathbf{T}$.
+        \item $\{X_t\}$ is a time-homogeneous Markov chain with state space $\mathcal{S}$, initial distribution $\boldsymbol{\pi}$, and transition matrix $\mathbf{T}$.
         \item Given $X_t$, the observation $O_t$ is independent of all other states and observations, with emission probability $E(o \mid X_t=s) = P(O_t=o \mid X_t=s)$.
     \end{enumerate}
     The joint distribution of a sequence of states and observations is
@@ -205,20 +225,38 @@ In many real‑world sequences, the underlying state is not directly observable.
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[node distance=1.2cm, thick, >=stealth]
-    \node[draw, circle, wp-primary] (X1) {$X_1$};
-    \node[draw, circle, wp-primary, right of=X1] (X2) {$X_2$};
-    \node[draw, circle, wp-primary, right of=X2] (X3) {$X_3$};
-    \draw[->] (X1) -- (X2);
-    \draw[->] (X2) -- (X3);
-    \node[draw, circle, wp-accent, below of=X1] (O1) {$O_1$};
-    \node[draw, circle, wp-accent, below of=X2] (O2) {$O_2$};
-    \node[draw, circle, wp-accent, below of=X3] (O3) {$O_3$};
-    \draw[->] (X1) -- (O1);
-    \draw[->] (X2) -- (O2);
-    \draw[->] (X3) -- (O3);
+% Certifique-se de que \usetikzlibrary{positioning} está no seu preâmbulo
+\begin{tikzpicture}[
+    node distance=1.0cm and 1.2cm, % Ajuste fino de espaçamento para a margem
+    thick, 
+    >=stealth,
+    % Estilo para os estados ocultos (Círculos)
+    hidden/.style={draw, circle, wp-primary, minimum size=0.7cm, font=\small},
+    % Estilo para as observações emitidas (Quadrados - corrigido conforme a legenda)
+    observed/.style={draw, rectangle, rounded corners=1pt, wp-accent, minimum size=0.65cm, font=\small}
+]
+    % Camada de Estados Ocultos (X)
+    \node[hidden] (X1) {$X_1$};
+    \node[hidden, right=of X1] (X2) {$X_2$};
+    \node[hidden, right=of X2] (X3) {$X_3$};
+    
+    % Camada de Observações Emitidas (O) posicionado abaixo de cada X correspondente
+    \node[observed, below=of X1] (O1) {$O_1$};
+    \node[observed, below=of X2] (O2) {$O_2$};
+    \node[observed, below=of X3] (O3) {$O_3$};
+
+    % Setas de Transição de Estado (Linhas horizontais)
+    \draw[->, wp-text] (X1) -- (X2);
+    \draw[->, wp-text] (X2) -- (X3);
+    
+    % Setas de Emissão (Linhas verticais descendo para as observações)
+    \draw[->, wp-text] (X1) -- (O1);
+    \draw[->, wp-text] (X2) -- (O2);
+    \draw[->, wp-text] (X3) -- (O3);
+    
 \end{tikzpicture}
 \caption{Graphical model of an HMM: hidden states $X_t$ (circle) emit observations $O_t$ (square).}
+\label{fig:hmm_graphical_model}
 \end{marginfigure}
 
 \paragraph{Inference and Learning in HMMs}
@@ -240,18 +278,18 @@ Find $\arg\max_{s_{1:T}} P(X_{1:T} \mid O_{1:T})$. The Viterbi algorithm uses:
 \]
 with backpointers to reconstruct the optimal path.
 
-\emph{3. Parameter Estimation (Baum–Welch / EM)}
-Given observations but no states, we maximise $\log P(O_{1:T} \mid \boldsymbol{\theta})$ via the EM algorithm. The E‑step computes posterior probabilities $\gamma_t(s) = P(X_t=s \mid O_{1:T})$ and $\xi_t(s',s) = P(X_{t-1}=s', X_t=s \mid O_{1:T})$ using the forward–backward algorithm. The M‑step updates:
+\emph{3. Parameter Estimation (Baum-Welch / EM)}
+Given observations but no states, we maximise $\log P(O_{1:T} \mid \boldsymbol{\theta})$ via the EM algorithm. The E-step computes posterior probabilities $\gamma_t(s) = P(X_t=s \mid O_{1:T})$ and $\xi_t(s',s) = P(X_{t-1}=s', X_t=s \mid O_{1:T})$ using the forward-backward algorithm. The M-step updates:
 \[
 \pi_s \propto \gamma_1(s),\quad T_{s',s} \propto \frac{\sum_{t=2}^T \xi_t(s',s)}{\sum_{t=2}^T \gamma_{t-1}(s')},\quad
 E(o \mid s) \propto \frac{\sum_{t: O_t=o} \gamma_t(s)}{\sum_t \gamma_t(s)}.
 \]
 
-\begin{thm}[Baum–Welch Convergence]
-    The Baum–Welch algorithm monotonically increases the likelihood $P(O_{1:T} \mid \boldsymbol{\theta})$ and converges to a local maximum of the likelihood.
+\begin{thm}[Baum-Welch Convergence]
+    The Baum-Welch algorithm monotonically increases the likelihood $P(O_{1:T} \mid \boldsymbol{\theta})$ and converges to a local maximum of the likelihood.
 \end{thm}
 
-\paragraph{Markov Decision Processes (MDPs) – A Brief Mention}
+\paragraph{Markov Decision Processes (MDPs) - A Brief Mention}
 When actions influence state transitions, we obtain an MDP. While not purely generative, MDPs are foundational for reinforcement learning. An MDP is a tuple $(\mathcal{S}, \mathcal{A}, \mathcal{T}, \mathcal{R}, \gamma)$ where:
 \begin{itemize}
     \item $\mathcal{S}$: state space,
@@ -268,26 +306,50 @@ HMMs and RNNs both address sequence modeling but differ fundamentally:
     \item \textbf{State representation}: HMM states are discrete (finite $\mathcal{S}$); RNN states are continuous vectors $\mathbf{h}_t \in \mathbb{R}^{d_h}$. Continuous states allow exponentially more expressive power for a fixed dimensionality.
     \item \textbf{Transition function}: HMM transitions are linear (matrix multiplication on a simplex); RNN transitions are nonlinear (e.g., $\tanh(\mathbf{W}_{hh}\mathbf{h}_{t-1} + \mathbf{W}_{xh}\mathbf{x}_t)$), enabling the modelling of complex dynamics.
     \item \textbf{Emission model}: HMM emissions factorize as $E(o_t \mid s_t)$; RNNs can produce outputs that depend on the entire history via $\mathbf{h}_t$.
-    \item \textbf{Learning}: HMMs are trained with EM (Baum–Welch), which guarantees local likelihood increase; RNNs use BPTT and stochastic gradient descent, which scale better to large state spaces and long sequences.
-    \item \textbf{Long‑range dependencies}: HMMs suffer from exponentially many states to represent $k$‑th order dependencies; RNNs attempt to compress history into a fixed‑size vector (though suffer from vanishing gradients).
+    \item \textbf{Learning}: HMMs are trained with EM (Baum-Welch), which guarantees local likelihood increase; RNNs use BPTT and stochastic gradient descent, which scale better to large state spaces and long sequences.
+    \item \textbf{Long-range dependencies}: HMMs suffer from exponentially many states to represent $k$-th order dependencies; RNNs attempt to compress history into a fixed-size vector (though suffer from vanishing gradients).
 \end{itemize}
 
 \begin{thm}[HMM as a Linear RNN]
-    If the state vector $\mathbf{h}_t$ is taken as the vector of probabilities $P(X_t=s \mid \text{history})$, then the update $\mathbf{h}_t \propto \mathbf{E}_{o_t} \odot (\mathbf{T}^{\mathsf{T}} \mathbf{h}_{t-1})$ (normalised) is a linear recurrence (with a non‑linear normalisation). This is equivalent to the forward algorithm of an HMM.
+    If the state vector $\mathbf{h}_t$ is taken as the vector of probabilities $P(X_t=s \mid \text{history})$, then the update $\mathbf{h}_t \propto \mathbf{E}_{o_t} \odot (\mathbf{T}^{\mathsf{T}} \mathbf{h}_{t-1})$ (normalised) is a linear recurrence (with a non-linear normalisation). This is equivalent to the forward algorithm of an HMM.
 \end{thm}
 
-The inadequacies of HMMs for large‑scale sequence modeling – discrete state, linear transitions, independence of observations given state – motivated the development of more powerful models, including conditional random fields (CRFs) and ultimately recurrent neural networks. However, HMMs remain important for their interpretability, small‑sample efficiency, and theoretical guarantees.
+The inadequacies of HMMs for large-scale sequence modeling - discrete state, linear transitions, independence of observations given state - motivated the development of more powerful models, including conditional random fields (CRFs) and ultimately recurrent neural networks. However, HMMs remain important for their interpretability, small-sample efficiency, and theoretical guarantees.
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[scale=0.6]
-    \begin{axis}[width=4cm, height=3cm, xlabel=state dimension, ylabel=expressive power, domain=1:10, samples=2, axis lines=middle]
-        \addplot[wp-primary, thick] {exp(x)};
-        \addplot[wp-accent, thick] {1.5^x};
-        \legend{HMM (discrete), RNN (continuous)};
+\begin{tikzpicture}[scale=1.0]
+    \begin{axis}[
+        width=5cm, height=4.5cm, 
+        xlabel={state dimension}, 
+        ylabel={expressive power}, 
+        domain=1:5, 
+        samples=100, 
+        axis lines=left, % Alinha o eixo Y na vertical esquerda e o X na horizontal inferior
+        enlargelimits=false,
+        xmin=0.8, xmax=5.2,
+        ymin=0, ymax=100, 
+        xticklabels={}, 
+        yticklabels={},
+        % Afasta o rótulo do eixo X para baixo da linha horizontal
+        xlabel style={at={(axis description cs:0.5,0.1)}, anchor=north},
+        % Rotaciona e posiciona o rótulo do eixo Y verticalmente à esquerda
+        ylabel style={at={(axis description cs:0.3,0.5)}, anchor=south},
+        % --------------------------------------------------
+    ]
+        % HMM (discrete)
+        \addplot[wp-accent, ultra thick] {1.8^x};
+        \label{plot:hmm}
+        
+        % RNN (continuous)
+        \addplot[wp-primary, ultra thick] {exp(x)};
+        \label{plot:rnn}
+        
     \end{axis}
 \end{tikzpicture}
-\caption{Continuous RNN states can represent exponentially more distinct histories than discrete HMM states of the same dimension.}
+% Texto alterado para explicitar as cores além dos símbolos gráficos
+\caption{Continuous RNN states (red line) can represent exponentially more distinct histories than discrete HMM states (orange line) of the same dimension.}
+\label{fig:hmm_vs_rnn_capacity}
 \end{marginfigure}
 
 \subsection{Sequence Learning Tasks}
@@ -295,32 +357,59 @@ The inadequacies of HMMs for large‑scale sequence modeling – discrete state,
 We categorise learning problems based on inputs and outputs:
 
 \begin{enumerate}
-    \item \textbf{Sequence prediction (auto‑regressive)}: Given past observations $x_{1:t-1}$, predict $x_t$. The model learns $P(x_t \mid x_{1:t-1})$.
+    \item \textbf{Sequence prediction (auto-regressive)}: Given past observations $x_{1:t-1}$, predict $x_t$. The model learns $P(x_t \mid x_{1:t-1})$.
     \item \textbf{Sequence classification}: Given the entire input sequence $\mathbf{x}_{1:T}$, predict a single label $y$. Example: sentiment analysis.
-    \item \textbf{Sequence labelling (per‑time‑step classification)}: Given $\mathbf{x}_{1:T}$, predict a label $y_t$ for each $t$. Example: part‑of‑speech tagging.
+    \item \textbf{Sequence labelling (per-time-step classification)}: Given $\mathbf{x}_{1:T}$, predict a label $y_t$ for each $t$. Example: part-of-speech tagging.
     \item \textbf{Sequence generation}: Sample a new sequence from the learned distribution $P(x_{1:T})$.
-    \item \textbf{Sequence‑to‑sequence (seq2seq)}: Map an input sequence $\mathbf{x}_{1:T}$ to an output sequence $\mathbf{y}_{1:T'}$ (possibly of different length). Example: machine translation.
+    \item \textbf{Sequence-to-sequence (seq2seq)}: Map an input sequence $\mathbf{x}_{1:T}$ to an output sequence $\mathbf{y}_{1:T'}$ (possibly of different length). Example: machine translation.
 \end{enumerate}
 
 \subsection{Why Feedforward Networks Fail for Sequences}
 
-Feedforward (multilayer perceptron) networks assume fixed‑length inputs and outputs, and – critically – they treat each input as independent. To process a sequence of length $T$, one could:
+Feedforward (multilayer perceptron) networks assume fixed-length inputs and outputs, and - critically - they treat each input as independent. To process a sequence of length $T$, one could:
 \begin{enumerate}
     \item \textbf{Concatenate all elements} into a single $d \times T$ vector. This fails because $T$ is variable and the resulting dimension becomes enormous.
     \item \textbf{Slide a window} of fixed size $w$ over the sequence, using the last $w$ values as input to a feedforward network. This ignores dependencies longer than $w$ (finite memory) and does not share parameters across time positions efficiently.
 \end{enumerate}
 
-Moreover, feedforward networks have no built‑in mechanism to handle the sequential order or to maintain a state that evolves over time. They cannot capture the inductive bias that the same transformation applies at each time step (weight sharing) – a property that recurrent networks exploit.
-
+Moreover, feedforward networks have no built-in mechanism to handle the sequential order or to maintain a state that evolves over time. They cannot capture the inductive bias that the same transformation applies at each time step (weight sharing) - a property that recurrent networks exploit.
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[scale=0.6]
-    \draw[thick, wp-primary] (0,0) -- (0,2) node[midway, left] {time};
-    \draw[thick, wp-primary] (0,0) -- (3,0) node[midway, below] {input features};
-    \node at (1.5,1.5) {Feedforward};
-    \node at (1.5,0.8) {no temporal sharing};
+\begin{tikzpicture}[
+    scale=1.5, thick, >=stealth,
+    % Estilos para os neurónios/camadas
+    layer/.style={draw, circle, minimum size=0.55cm, font=\small\bfseries},
+    in_node/.style={layer, wp-accent},
+    hid_node/.style={layer, wp-primary},
+    out_node/.style={layer, wp-dark}
+]
+    % --- INSTANTE t ---
+    % Camada de Entrada
+    \node[in_node] (I1) at (0, 1.2) {$x_1$};
+    \node[in_node] (I2) at (0, 0.4) {$x_2$};
+    
+    % Camada Oculta
+    \node[hid_node] (H1) at (1.2, 1.6) {$h_1$};
+    \node[hid_node] (H2) at (1.2, 0.8) {$h_2$};
+    \node[hid_node] (H3) at (1.2, 0.0) {$h_3$};
+    
+    % Camada de Saída
+    \node[out_node] (O1) at (2.4, 0.8) {$\hat{y}$};
+    
+    % Conexões (Feedforward total)
+    \foreach \i in {I1,I2}
+        \foreach \h in {H1,H2,H3}
+            \draw[->, black!30, thin] (\i) -- (\h);
+            
+    \foreach \h in {H1,H2,H3}
+        \draw[->, black!30, thin] (\h) -- (O1);
+
+    % Rótulos explicativos textuais bem posicionados
+    \node[anchor=north, font=\tiny\bfseries, wp-text] at (1.2, -0.5) {\footnotesize{Time step $t$ (Isolated)}};
+
 \end{tikzpicture}
 \caption{Feedforward networks treat each time step independently; they cannot share weights across time or maintain a dynamic state.}
+\label{fig:feedforward_no_temporal}
 \end{marginfigure}
 
 \subsection{Recurrence as a Natural Solution}
@@ -331,7 +420,7 @@ An RNN addresses these limitations by introducing a \textbf{hidden state} $\math
 \]
 where $f$ is a parameterised function (same at each step). This gives three crucial properties:
 \begin{itemize}
-    \item \textbf{Variable‑length handling}: the same recurrence applies for any $T$.
+    \item \textbf{Variable-length handling}: the same recurrence applies for any $T$.
     \item \textbf{Parameter sharing}: the same weights $\boldsymbol{\theta}$ are used at each time step, reducing the number of parameters and promoting generalization.
     \item \textbf{Memory}: the hidden state $\mathbf{h}_t$ can theoretically retain information from arbitrarily distant past (though in practice limited by vanishing gradients).
 \end{itemize}
@@ -352,9 +441,9 @@ The most basic RNN, proposed by Elman (1990), consists of an input layer, a hidd
     \end{align}
     where:
     \begin{itemize}
-        \item $\mathbf{W}_{xh} \in \mathbb{R}^{d_h \times d_x}$ is the input‑to‑hidden weight matrix,
-        \item $\mathbf{W}_{hh} \in \mathbb{R}^{d_h \times d_h}$ is the recurrent (hidden‑to‑hidden) weight matrix,
-        \item $\mathbf{W}_{hy} \in \mathbb{R}^{d_y \times d_h}$ is the hidden‑to‑output weight matrix,
+        \item $\mathbf{W}_{xh} \in \mathbb{R}^{d_h \times d_x}$ is the input-to-hidden weight matrix,
+        \item $\mathbf{W}_{hh} \in \mathbb{R}^{d_h \times d_h}$ is the recurrent (hidden-to-hidden) weight matrix,
+        \item $\mathbf{W}_{hy} \in \mathbb{R}^{d_y \times d_h}$ is the hidden-to-output weight matrix,
         \item $\mathbf{b}_h \in \mathbb{R}^{d_h}$, $\mathbf{b}_y \in \mathbb{R}^{d_y}$ are bias vectors,
         \item $\phi_h$ is a nonlinear activation function (typically $\tanh$ or ReLU),
         \item $\phi_y$ is the output activation (e.g., softmax for classification, identity for regression).
@@ -364,27 +453,45 @@ The most basic RNN, proposed by Elman (1990), consists of an input layer, a hidd
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[node distance=1cm, thick, >=stealth]
-    \node[draw, rectangle, rounded corners, wp-primary, minimum width=2cm] (cell) {RNN Cell};
-    \node[left of=cell, node distance=2cm] (x) {$\mathbf{x}_t$};
-    \node[below of=cell, node distance=1.2cm] (hprev) {$\mathbf{h}_{t-1}$};
-    \node[right of=cell, node distance=2cm] (y) {$\hat{\mathbf{y}}_t$};
-    \node[above of=cell, node distance=1.2cm] (h) {$\mathbf{h}_t$};
-    \draw[->] (x) -- (cell);
-    \draw[->] (hprev) -- (cell);
-    \draw[->] (cell) -- (y);
-    \draw[->] (cell) -- (h);
-    \draw[->, dashed] (h) to[out=90,in=180] ++(1.5,0.5) node[right] {to next step};
+% Certifique-se de ter \usetikzlibrary{positioning} no seu preâmbulo
+\begin{tikzpicture}[
+    node distance=1.2cm and 1.2cm, 
+    thick, 
+    >=stealth,
+    % Estilo para o bloco principal da RNN
+    cell_box/.style={draw, rectangle, rounded corners, wp-primary, minimum width=1.6cm, minimum height=1.0cm, font=\small\bfseries, align=center}
+]
+    % Bloco Central da RNN
+    \node[cell_box] (cell) {\scriptsize RNN Cell\\($\mathbf{h}_t$)};
+    
+    % Nós de Entrada e Saída (Posicionamento relativo moderno)
+    \node[below=of cell] (x) {$\mathbf{x}_t$};
+    \node[above=of cell] (y) {$\hat{\mathbf{y}}_t$};
+    \node[left=of cell] (hprev) {$\mathbf{h}_{t-1}$};
+    \node[right=of cell] (hnext) {$\mathbf{h}_{t+1}$};
+    
+    % Fluxo de Dados: Entrada -> Processamento -> Saída
+    \draw[->, wp-text] (x) -- (cell);
+    \draw[->, wp-text] (cell) -- (y);
+    
+    % Fluxo de Dados Temporal (Estados Ocultos)
+    \draw[->, wp-text] (hprev) -- (cell);
+    
+    % Seta tracejada para o próximo passo (Passando pelo nó hnext)
+    \draw[->, wp-accent, dashed] (cell) -- (hnext) 
+        node[midway, above, font=\scriptsize, text=wp-text] {recurrent};
+
 \end{tikzpicture}
-\caption{Schematic of a single RNN cell. The hidden state $\mathbf{h}_t$ is fed back to the next time step.}
+\caption{Schematic of a single RNN cell. The hidden state $\mathbf{h}_t$ propagates to the next time step.}
+\label{fig:rnn_single_cell}
 \end{marginfigure}
 
 \subsection{Connection to Linear Dynamical Systems}
 
-Classical state‑space models, known as linear dynamical systems (LDS) or Kalman filters, provide a linear counterpart to RNNs.
+Classical state-space models, known as linear dynamical systems (LDS) or Kalman filters, provide a linear counterpart to RNNs.
 
 \begin{defn}[Linear Dynamical System]
-    A discrete‑time LDS is defined by:
+    A discrete-time LDS is defined by:
     \begin{align}
         \mathbf{h}_t &= \mathbf{A} \mathbf{h}_{t-1} + \mathbf{B} \mathbf{x}_t + \boldsymbol{\epsilon}_t, \quad \boldsymbol{\epsilon}_t \sim \mathcal{N}(0, \mathbf{Q}), \\
         \mathbf{y}_t &= \mathbf{C} \mathbf{h}_t + \boldsymbol{\delta}_t, \quad \boldsymbol{\delta}_t \sim \mathcal{N}(0, \mathbf{R}),
@@ -402,21 +509,40 @@ The RNN generalises the LDS in two ways:
     \item Deterministic state (no process noise), though one can add noise for probabilistic RNNs.
 \end{itemize}
 
-If $\phi_h$ is the identity function and $\mathbf{b}_h = \mathbf{0}$, the RNN reduces to a linear system. Conversely, the LDS can be interpreted as a linear RNN with Gaussian noise. Inference in LDS (Kalman smoothing) resembles forward–backward propagation in RNNs but with exact uncertainty propagation. This connection is valuable for understanding RNNs as flexible nonlinear extensions of classical time‑series models.
+If $\phi_h$ is the identity function and $\mathbf{b}_h = \mathbf{0}$, the RNN reduces to a linear system. Conversely, the LDS can be interpreted as a linear RNN with Gaussian noise. Inference in LDS (Kalman smoothing) resembles forward-backward propagation in RNNs but with exact uncertainty propagation. This connection is valuable for understanding RNNs as flexible nonlinear extensions of classical time-series models.
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[node distance=1cm, thick]
-    \node[draw, rectangle, wp-primary] (rnn) {RNN};
-    \node[draw, rectangle, wp-accent, right of=rnn] (lds) {LDS};
-    \draw[<->, thick] (rnn) -- node[above] {nonlinear} (lds);
+% Certifique-se de ter \usetikzlibrary{positioning, arrows.meta} no seu preâmbulo
+\begin{tikzpicture}[
+    node distance=1.2cm, 
+    thick, 
+    >=Stealth,
+    % Estilo para os blocos conceituais
+    block/.style={draw, rectangle, rounded corners=3pt, minimum width=2.2cm, minimum height=0.8cm, font=\small\bfseries, align=center}
+]
+    % Bloco Superior: Sistema Dinâmico Linear
+    \node[block, wp-accent] (lds) {Linear Dynamical\\System (LDS)};
+    
+    % Bloco Inferior: RNN (Posicionado abaixo do LDS)
+    \node[block, wp-primary, below=of lds] (rnn) {Recurrent Neural\\Network (RNN)};
+    
+    % Seta de transição conceitual indicando a generalização (de cima para baixo)
+    \draw[->, wp-text, line width=1.2pt] (lds) -- (rnn) 
+        node[midway, right, font=\footnotesize\bfseries, text=wp-primary] {+ Nonlinearity};
+        
+    % Indicações sutis de propriedades na lateral esquerda de cada bloco
+    \node[anchor=east, font=\footnotesize\itshape, wp-muted] at (lds.west) {Linear};
+    \node[anchor=east, font=\footnotesize\itshape, wp-muted] at (rnn.west) {Generalised};
+
 \end{tikzpicture}
 \caption{RNNs generalise linear dynamical systems by replacing linear transitions with nonlinear functions.}
+\label{fig:rnn_vs_lds}
 \end{marginfigure}
 
 \subsection{Bidirectional Recurrent Neural Networks}
 
-Many sequence tasks – such as part‑of‑speech tagging or named entity recognition – benefit from access to both past and future context. A bidirectional RNN (BiRNN) processes the sequence in two directions.
+Many sequence tasks - such as part-of-speech tagging or named entity recognition - benefit from access to both past and future context. A bidirectional RNN (BiRNN) processes the sequence in two directions.
 
 \begin{defn}[Bidirectional RNN]
     Given an input sequence $\mathbf{x}_{1:T}$, a BiRNN maintains:
@@ -428,23 +554,78 @@ Many sequence tasks – such as part‑of‑speech tagging or named entity recog
     The output at time $t$ is computed from $\mathbf{h}_t$: $\hat{\mathbf{y}}_t = \phi_y(\mathbf{W}_y \mathbf{h}_t + \mathbf{b}_y)$.
 \end{defn}
 
-\begin{marginfigure}
+\begin{figure}[h] % Mudado de marginfigure para figure padrão (posicionamento no topo do texto)
 \centering
-\begin{tikzpicture}[node distance=0.8cm, thick, >=stealth]
-    \node[draw, circle, wp-primary] (h1f) {$\overrightarrow{h}_1$};
-    \node[draw, circle, wp-primary, right of=h1f] (h2f) {$\overrightarrow{h}_2$};
-    \node[draw, circle, wp-primary, right of=h2f] (h3f) {$\overrightarrow{h}_3$};
-    \node[draw, circle, wp-accent, below of=h1f] (h1b) {$\overleftarrow{h}_1$};
-    \node[draw, circle, wp-accent, right of=h1b] (h2b) {$\overleftarrow{h}_2$};
-    \node[draw, circle, wp-accent, right of=h2b] (h3b) {$\overleftarrow{h}_3$};
-    \draw[->] (h1f) -- (h2f); \draw[->] (h2f) -- (h3f);
-    \draw[<-] (h1b) -- (h2b); \draw[<-] (h2b) -- (h3b);
-    \node[above of=h1f] {$\mathbf{x}_1$}; \node[above of=h2f] {$\mathbf{x}_2$}; \node[above of=h3f] {$\mathbf{x}_3$};
-\end{tikzpicture}
-\caption{Bidirectional RNN: forward (top) and backward (bottom) states are combined.}
-\end{marginfigure}
+\begin{tikzpicture}[
+    scale=1.1, % Escala ampliada para aproveitar o espaço do corpo do texto
+    thick, >=stealth,
+    % Estilos dos nós dos neurônios
+    state/.style={draw, circle, minimum size=0.9cm, font=\footnotesize, inner sep=1pt, fill=white},
+    forward/.style={state, draw=wp-primary},
+    backward/.style={state, draw=wp-accent},
+    input/.style={font=\footnotesize\bfseries},
+    output/.style={font=\footnotesize\bfseries, wp-dark},
+    % Estilos dos rótulos explicativos na lateral esquerda
+    text_lbl/.style={anchor=east, font=\footnotesize\bfseries},
+    text_f/.style={anchor=east, wp-primary, font=\footnotesize\itshape},
+    text_b/.style={anchor=east, wp-accent, font=\footnotesize\itshape}
+]
+    % --- Camada de Entrada ---
+    % Espaçamento horizontal ampliado para 2.6cm para melhor legibilidade
+    \node[input] (X1) at (0, 0) {$\mathbf{x}_1$};
+    \node[input] (X2) at (2.6, 0) {$\mathbf{x}_2$};
+    \node[input] (X3) at (5.2, 0) {$\mathbf{x}_3$};
 
-During training, we unroll both directions and compute the loss at each step. Backpropagation through time propagates gradients separately through the forward and backward chains, and the concatenated state gradients are summed. Bidirectional RNNs are not suitable for real‑time or online tasks (since the full sequence is required to compute backward states), but they are very effective for offline sequence labelling.
+    % --- Camada Oculta Forward (Intermediária) ---
+    \node[forward] (H1f) at (0, 1.4) {$\overrightarrow{h}_1$};
+    \node[forward] (H2f) at (2.6, 1.4) {$\overrightarrow{h}_2$};
+    \node[forward] (H3f) at (5.2, 1.4) {$\overrightarrow{h}_3$};
+
+    % --- Camada Oculta Backward (Superior) ---
+    \node[backward] (H1b) at (0, 3.0) {$\overleftarrow{h}_1$};
+    \node[backward] (H2b) at (2.6, 3.0) {$\overleftarrow{h}_2$};
+    \node[backward] (H3b) at (5.2, 3.0) {$\overleftarrow{h}_3$};
+    
+    % --- Camada de Saída ---
+    \node[output] (Y1) at (0, 4.4) {$\mathbf{y}_1$};
+    \node[output] (Y2) at (2.6, 4.4) {$\mathbf{y}_2$};
+    \node[output] (Y3) at (5.2, 4.4) {$\mathbf{y}_3$};
+
+    % --- Conexões Recorrentes Temporais (Horizontais) ---
+    \draw[->, wp-primary, line width=1.1pt] (H1f) -- (H2f);
+    \draw[->, wp-primary, line width=1.1pt] (H2f) -- (H3f);
+    
+    \draw[->, wp-accent, line width=1.1pt] (H3b) -- (H2b);
+    \draw[->, wp-accent, line width=1.1pt] (H2b) -- (H1b);
+
+    % --- Distribuição de Setas de Entrada e Saída ---
+    \foreach \t in {1,2,3} {
+        % Entrada para Forward (Linha reta vertical)
+        \draw[->, black!80] (X\t.north) -- (H\t f.south);
+        
+        % Entrada para Backward (Curva externa esquerda, agora mais suave)
+        \draw[->, black!80] (X\t.north west) to[bend left=15] (H\t b.west);
+        
+        % Forward para Saída (Curva externa direita, agora mais suave)
+        \draw[->, black!80] (H\t f.east) to[bend right=15] (Y\t.south east);
+        
+        % Backward para Saída (Linha reta vertical)
+        \draw[->, black!80] (H\t b.north) -- (Y\t.south);
+    }
+
+    % --- Rótulos Estruturais (Margem Esquerda bem afastada devido ao novo espaço)
+    \node[text_lbl] at (-1.0, 0) {Input layer};
+    \node[text_f]   at (-1.0, 1.4) {forward ($\rightarrow$)};
+    \node[text_lbl] at (-1.0, 2.2) {Hidden layer(s)};
+    \node[text_b]   at (-1.0, 3.0) {backward ($\leftarrow$)};
+    \node[text_lbl] at (-1.0, 4.4) {Output layer};
+
+\end{tikzpicture}
+\caption{Structure of a Bidirectional Recurrent Neural Network (BiRNN). Inputs $\mathbf{x}_t$ independently drive the forward and backward hidden states, which are then combined cleanly to project the outputs $\mathbf{y}_t$.}
+\label{fig:birnn_structure_standard}
+\end{figure}
+
+During training, we unroll both directions and compute the loss at each step. Backpropagation through time propagates gradients separately through the forward and backward chains, and the concatenated state gradients are summed. Bidirectional RNNs are not suitable for real-time or online tasks (since the full sequence is required to compute backward states), but they are very effective for offline sequence labelling.
 
 \subsection{Deep (Stacked) Recurrent Neural Networks}
 
@@ -481,25 +662,50 @@ Deep RNNs are used in applications such as acoustic modelling for speech recogni
 
 To understand training, it is convenient to “unroll” the recurrence over time, obtaining a deep feedforward network with shared weights across layers (each layer corresponds to a time step). The unrolled architecture for $T$ time steps is shown in Figure~\ref{fig:rnn_unrolled}.
 
-\begin{figure}[h]
+\begin{figure}[t!]
 \centering
-\begin{tikzpicture}[node distance=1cm, thick, >=stealth]
+\begin{tikzpicture}[
+    scale=1.0,
+    thick, >=stealth,
+    % Estilo para os blocos da RNN desdobrada
+    rnn_box/.style={draw, rectangle, rounded corners=3pt, wp-primary, minimum width=0.8cm, minimum height=0.8cm, font=\small\bfseries, fill=white},
+    % Estilo para os nós de dados
+    io_node/.style={font=\small\bfseries, wp-dark}
+]
+    % Loop principal para renderizar os 4 passos de tempo (t = 0, 1, 2, 3)
     \foreach \t in {0,1,2,3} {
-        \pgfmathsetmacro{\prev}{\t-1}
-        \node[draw, rectangle, rounded corners, wp-primary, minimum width=1.2cm] (cell\t) at (\t*2,0) {RNN};
-        \node[above of=cell\t, node distance=0.8cm] (x\t) {$\mathbf{x}_\t$};
-        \draw[->] (x\t) -- (cell\t);
-        \node[below of=cell\t, node distance=0.8cm] (h\t) {$\mathbf{h}_\t$};
-        \draw[->] (cell\t) -- (h\t);
-        \node[above of=h\t, node distance=1.5cm] (y\t) {$\hat{\mathbf{y}}_\t$};
-        \draw[->] (cell\t) -- (y\t);
+        
+        % 1. Posicionamento dos Blocos Centrais da RNN (afastados horizontalmente por \t * 2.4)
+        \node[rnn_box] (cell\t) at (\t*2.4, 0) {RNN};
+        
+        % 2. Camada de Entrada x_t (Posicionada estritamente ABORDADA abaixo da célula)
+        \node[io_node] (x\t) at (\t*2.4, -1.3) {$\mathbf{x}_\t$};
+        \draw[->, black!80, line width=0.8pt] (x\t) -- (cell\t);
+        
+        % 3. Camada de Saída y_t (Posicionada estritamente ACIMA da célula, sem colisões)
+        \node[io_node] (y\t) at (\t*2.4, 1.3) {$\hat{\mathbf{y}}_\t$};
+        \draw[->, black!80, line width=0.8pt] (cell\t) -- (y\t);
+        
+        % 4. Conexões Temporais Sequenciais (Ocultas horizontais)
         \ifnum\t>0
-            \draw[->] (h\prev) -- (cell\t);
+            \pgfmathsetmacro{\prev}{int(\t-1)}
+            % Conecta de forma limpa a célula anterior com a atual, indicando a passagem de h_t
+            \draw[->, wp-accent, line width=1.2pt] (cell\prev) -- (cell\t) 
+                node[midway, above, font=\small\bfseries, text=wp-text] {$\mathbf{h}_{\t}$};
         \fi
     }
-    \node at (0, -1.5) {$\mathbf{h}_0$ (initial state)};
+    
+    % --- Estado Inicial h_0 (Entrando na primeira célula pela esquerda) ---
+    \node[io_node, anchor=east] (h0) at (-1.2, 0) {$\mathbf{h}_0$};
+    \draw[->, wp-accent, line width=1.2pt] (h0) -- (cell0);
+    \node[anchor=north, font=\small\itshape, wp-muted] at (h0.south) {initial state};
+
+    % --- Indicação de Continuidade (Opcional, seta de saída no final) ---
+    \draw[->, wp-accent, line width=1.2pt, dashed] (cell3) -- ++(1.2, 0) 
+        node[right, font=\small\bfseries, text=wp-muted] {$\mathbf{h}_4$};
+
 \end{tikzpicture}
-\caption{Unrolled RNN for $T=4$ time steps. The same weights $\mathbf{W}_{xh}, \mathbf{W}_{hh}, \mathbf{W}_{hy}$ are reused at every step.}
+\caption{Unrolled RNN for $T=4$ time steps. The same weights $\mathbf{W}_{xh}, \mathbf{W}_{hh}, \mathbf{W}_{hy}$ are reused at every step, with hidden states $\mathbf{h}_t$ propagating horizontally.}
 \label{fig:rnn_unrolled}
 \end{figure}
 
@@ -522,11 +728,11 @@ Given an input sequence $\mathbf{x}_{1:T}$, forward propagation computes the hid
 
 \section{Training RNNs: Backpropagation Through Time (BPTT)}
 
-RNNs are trained by minimising a loss function that aggregates errors over all time steps. For a sequence with targets $\mathbf{y}_{1:T}$, the total loss is the sum of per‑time‑step losses:
+RNNs are trained by minimising a loss function that aggregates errors over all time steps. For a sequence with targets $\mathbf{y}_{1:T}$, the total loss is the sum of per-time-step losses:
 \[
 \mathcal{L}(\mathbf{y}_{1:T}, \hat{\mathbf{y}}_{1:T}) = \sum_{t=1}^{T} \ell(\mathbf{y}_t, \hat{\mathbf{y}}_t),
 \]
-where $\ell$ is a pointwise loss (e.g., cross‑entropy or squared error). Because the same parameters are shared across time, we must backpropagate gradients through the entire unrolled network. This procedure is called \textbf{backpropagation through time (BPTT)}.
+where $\ell$ is a pointwise loss (e.g., cross-entropy or squared error). Because the same parameters are shared across time, we must backpropagate gradients through the entire unrolled network. This procedure is called \textbf{backpropagation through time (BPTT)}.
 
 \subsection{Gradient Computation}
 
@@ -543,7 +749,7 @@ Define the error at the output of the RNN at time $t$ as:
 \[
 \boldsymbol{\delta}_t^{\text{out}} = \frac{\partial \ell_t}{\partial \mathbf{o}_t} = \nabla_{\hat{\mathbf{y}}_t} \ell_t \odot \phi_y'(\mathbf{o}_t).
 \]
-For the hidden layer, we need the sensitivity of the total future loss with respect to the pre‑activation $\mathbf{a}_t$. By the chain rule,
+For the hidden layer, we need the sensitivity of the total future loss with respect to the pre-activation $\mathbf{a}_t$. By the chain rule,
 \[
 \frac{\partial \mathcal{L}}{\partial \mathbf{a}_t} = \underbrace{\frac{\partial \ell_t}{\partial \mathbf{a}_t}}_{\text{immediate}} + \underbrace{\frac{\partial \mathcal{L}_{t+1:T}}{\partial \mathbf{a}_t}}_{\text{from future}}.
 \]
@@ -571,7 +777,7 @@ Once the $\boldsymbol{\delta}_t$ are known, the gradients are:
     \frac{\partial \mathcal{L}}{\partial \mathbf{b}_y} &= \sum_{t=1}^{T} \boldsymbol{\delta}_t^{\text{out}}.
 \end{align}
 
-These gradients are then used in any gradient‑based optimiser (SGD, Adam, etc.). The complete BPTT algorithm is summarised below.
+These gradients are then used in any gradient-based optimiser (SGD, Adam, etc.). The complete BPTT algorithm is summarised below.
 
 \begin{algorithm}[h]
     \caption{Backpropagation Through Time (BPTT)}
@@ -590,7 +796,7 @@ These gradients are then used in any gradient‑based optimiser (SGD, Adam, etc.
 
 \subsection{Vanishing and Exploding Gradients in Depth}
 
-We now analyse the gradient propagation problem more rigorously. Recall the hidden state recurrence $\mathbf{h}_t = \phi_h(\mathbf{W}_{hh}\mathbf{h}_{t-1} + \mathbf{W}_{xh}\mathbf{x}_t + \mathbf{b}_h)$. For notational simplicity, define the pre‑activation $\mathbf{a}_t = \mathbf{W}_{hh}\mathbf{h}_{t-1} + \mathbf{W}_{xh}\mathbf{x}_t + \mathbf{b}_h$, so $\mathbf{h}_t = \phi_h(\mathbf{a}_t)$. The Jacobian of $\mathbf{h}_t$ with respect to $\mathbf{h}_{t-1}$ is
+We now analyse the gradient propagation problem more rigorously. Recall the hidden state recurrence $\mathbf{h}_t = \phi_h(\mathbf{W}_{hh}\mathbf{h}_{t-1} + \mathbf{W}_{xh}\mathbf{x}_t + \mathbf{b}_h)$. For notational simplicity, define the pre-activation $\mathbf{a}_t = \mathbf{W}_{hh}\mathbf{h}_{t-1} + \mathbf{W}_{xh}\mathbf{x}_t + \mathbf{b}_h$, so $\mathbf{h}_t = \phi_h(\mathbf{a}_t)$. The Jacobian of $\mathbf{h}_t$ with respect to $\mathbf{h}_{t-1}$ is
 \[
 \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_{t-1}} = \mathbf{W}_{hh}^{\mathsf{T}} \operatorname{diag}(\phi_h'(\mathbf{a}_t)).
 \]
@@ -617,30 +823,62 @@ If $\phi_h = \tanh$, then $|\tanh'(z)| \le 1$, so $\| \operatorname{diag}(\phi_h
 
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[scale=0.6]
-    \begin{axis}[width=4.5cm, height=3cm, xlabel=time steps apart, ylabel=gradient norm, domain=1:20, samples=50, axis lines=middle]
-        \addplot[wp-primary, thick] {exp(-0.5*x)};
-        \addplot[wp-accent, thick] {1.2^x};
-        \legend{vanishing ($\rho<1$), exploding ($\rho>1$)};
+\begin{tikzpicture}[scale=1.0] % Escala ideal para marginfigure combinada com width/height abaixo
+    \begin{axis}[
+        width=5cm, height=4.5cm, 
+        xlabel={time steps apart}, 
+        ylabel={gradient norm}, 
+        domain=1:10, % Reduzido o domínio para focar onde o comportamento diverge de forma visível
+        samples=100, 
+        axis lines=left, % Alinha eixos nas bordas esquerda e inferior
+        xmin=0, xmax=10.5,
+        ymin=0, ymax=4.0, % Teto vertical controlado para a explosão não achatar o desvanecimento
+        xticklabels={}, % Limpa os números para um visual conceitual e elegante de livro
+        yticklabels={},
+        enlargelimits=false,
+        clip=true,
+        % --- Posicionamento dos Rótulos bem próximos aos eixos ---
+        xlabel style={at={(axis description cs:0.5,0.1)}, anchor=north, font=\footnotesize},
+        ylabel style={at={(axis description cs:0.3,0.5)}, anchor=south, font=\footnotesize},
+        % --- Legenda minificada para caber na caixa lateral ---
+        legend style={
+            font=\footnotesize,
+            at={(0.95,0.95)},
+            anchor=north west,
+            cells={anchor=west},
+            row sep=-2pt,
+            fill=white,
+            draw=black!10
+        }
+    ]
+        % 1. Vanishing Gradient (Decai suavemente em direção ao zero)
+        \addplot[wp-primary, ultra thick] {3.0 * exp(-0.6*x)};
+        
+        % 2. Exploding Gradient (Dispara rapidamente para cima)
+        \addplot[wp-accent, ultra thick] {0.2 * 1.5^x};
+        
+        \legend{vanishing ($\rho < 1$), exploding ($\rho > 1$)};
+    
     \end{axis}
 \end{tikzpicture}
-\caption{Exponential behaviour of gradient magnitude with sequence distance.}
+\caption{Exponential behaviour of gradient magnitude with sequence distance: {\color{wp-primary} vanishing} and {\color{wp-accent} exploding}.}
+\label{fig:gradient_behavior}
 \end{marginfigure}
 
-The vanishing gradient problem is the primary reason simple RNNs cannot learn long‑range dependencies (e.g., more than 10–20 steps). Gated architectures (LSTM, GRU) mitigate this by allowing the gradient to bypass the multiplicative chain via additive updates.
+The vanishing gradient problem is the primary reason simple RNNs cannot learn long-range dependencies (e.g., more than 10-20 steps). Gated architectures (LSTM, GRU) mitigate this by allowing the gradient to bypass the multiplicative chain via additive updates.
 
 \paragraph{Gradient Clipping}
 When gradients explode, the parameter update becomes erratic and may cause overflow. A simple but effective remedy is \textbf{gradient clipping}. Two common variants exist:
 
-\begin{defn}[Norm‑based Gradient Clipping]
+\begin{defn}[Norm-based Gradient Clipping]
     Let $\mathbf{g} = \nabla_{\boldsymbol{\theta}} \mathcal{L}$ be the gradient vector of all parameters. If $\|\mathbf{g}\| > c$, rescale it:
     \[
     \tilde{\mathbf{g}} = \frac{c}{\|\mathbf{g}\|} \mathbf{g}.
     \]
-    Here $c > 0$ is a user‑defined threshold. This preserves the direction while bounding the step size.
+    Here $c > 0$ is a user-defined threshold. This preserves the direction while bounding the step size.
 \end{defn}
 
-\begin{defn}[Value‑based Gradient Clipping]
+\begin{defn}[Value-based Gradient Clipping]
     For each component $g_i$, set $\tilde{g}_i = \max(-c, \min(c, g_i))$. This is elementwise clipping.
 \end{defn}
 
@@ -656,7 +894,7 @@ In practice, $c$ is often set between $1$ and $5$ for RNNs. Clipping is applied 
 
 To mitigate the vanishing gradient problem, more sophisticated RNN cells introduce \textbf{gates} that control the flow of information.
 
-\subsection{Long Short‑Term Memory (LSTM)}
+\subsection{Long Short-Term Memory (LSTM)}
 
 The LSTM, proposed by Hochreiter and Schmidhuber (1997), maintains a separate cell state $\mathbf{c}_t$ in addition to the hidden state $\mathbf{h}_t$. The cell state acts as a “conveyor belt” that can carry information over many steps. Three gates control access:
 
@@ -685,16 +923,82 @@ The GRU (Cho et al., 2014) simplifies the LSTM by combining the forget and input
 \end{align}
 GRUs have fewer parameters than LSTMs and often perform similarly.
 
-\begin{marginfigure}
+\begin{figure}[t!]
 \centering
-\begin{tikzpicture}[node distance=0.8cm, thick]
-    \node[draw, rectangle, rounded corners, wp-primary] (lstm) {LSTM Cell};
-    \node[above of=lstm] {$\mathbf{h}_t, \mathbf{c}_t$};
-    \node[below of=lstm] {$\mathbf{h}_{t-1}, \mathbf{c}_{t-1}$};
-    \node[left of=lstm] {$\mathbf{x}_t$};
+% Certifique-se de incluir no preâmbulo:
+% \usetikzlibrary{positioning, calc, arrows.meta}
+\begin{tikzpicture}[
+    scale=1.0, 
+    thick, >=stealth,
+    % Caixa delimitadora externa da célula
+    cell_box/.style={draw, rectangle, rounded corners=10pt, black!80, loosely dashed, line width=1.2pt, minimum width=7.2cm, minimum height=4.2cm},
+    % Blocos de ativação
+    layer/.style={draw, rectangle, font=\scriptsize\bfseries, minimum width=1.0cm, minimum height=0.5cm, fill=wp-accent, text=black},
+    % Operadores matemáticos circulares
+    op/.style={draw, circle, minimum size=0.5cm, inner sep=0pt, font=\small, fill=wp-primary!50, draw=black},
+    % Estilo de texto interno para os rótulos posicionados sobre as linhas
+    gate_lbl/.style={font=\small\bfseries, text=black, align=center, fill=white, inner sep=2pt},
+    io/.style={font=\small, text=black}
+]
+
+    % 1. Renderiza a caixa externa principal (Referência espacial)
+    \node[cell_box] (B) at (4.0, 1.8) {};
+
+    % 2. Nós de entrada externos e rótulos (O fluxo agora se conecta diretamente a eles)
+    \node[io, left=0.8cm of B.155, align=left] (c_prev_lbl) {Memory cell\\internal state\\$\mathbf{C}_{t-1}$};
+    \node[io, left=0.8cm of B.190, align=left] (h_prev_lbl) {Hidden state\\$\mathbf{H}_{t-1}$};
+    \node[io, below=0.6cm of B.225] (x_lbl) {Input $\mathbf{X}_t$};
+    
+    % Saída à direita
+    \node[io, right=0.8cm of B.25] (c_next_lbl) {$\mathbf{C}_t$};
+
+    % 3. Alinhamento dos Operadores na Esteira Superior
+    \node[op] (f_mult) at ($(B.155)!0.22!(B.25)$) {$\odot$};
+    \node[op] (i_add)  at ($(B.155)!0.65!(B.25)$) {$+$};
+
+    % 4. Posicionamento Estratégico dos Blocos de Ativação
+    \node[layer] (f_gate) at ($(f_mult)-(0,1.8)$) {$\sigma$};
+    \node[op] (input_mult) at ($(i_add)-(0,0.9)$) {$\odot$};
+    \node[layer] (c_gate) at ($(input_mult)-(0,0.9)$) {$\tanh$};
+    \node[layer] (i_gate) at ($(c_gate)-(1.6,0)$) {$\sigma$};
+    \node[layer] (o_gate) at ($(B.155)!0.85!(B.25) - (0,1.8)$) {$\sigma$};
+
+    % ================= CONEXÕES COM RÓTULOS NO MEIO DAS RETAS =================
+
+    % Fluxo Principal Superior: Cell State (Setas saem e entram DIRETAMENTE nas letras)
+    \draw[->] (c_prev_lbl.east) -- (f_mult);
+    \draw[->] (f_mult) -- (i_add);
+    \draw[->] (i_add) -- (c_next_lbl.west);
+
+    % Linha de Barramento Inferior (Hidden State)
+    \coordinate (h_bus) at ($(B.190)+(0.3,0)$);
+    \draw[-] (h_prev_lbl.east) -- (h_bus);
+    \draw[-] (x_lbl.north) |- (h_bus);
+
+    % Distribuição paralela para a base de cada camada
+    \foreach \g in {f_gate, i_gate, c_gate, o_gate} {
+        \draw[->] (h_bus) -| (\g.south);
+    }
+
+    % Forget gate à esquerda da sua linha vertical
+    \draw[->] (f_gate) -- (f_mult) node[midway, left=2pt, font=\tiny\bfseries, align=center] {Forget\\gate\\$\mathbf{F}_t$};
+    
+    % Input node à direita da sua linha vertical
+    \draw[->] (c_gate) -- (input_mult) node[midway, right=2pt, font=\tiny\bfseries, align=center] {Input\\node\\$\tilde{\mathbf{C}}_t$};
+    
+    % Input gate no meio da linha ortogonal que dobra em L
+    \draw[->] (i_gate.north) |- (input_mult.west) node[midway, above, font=\tiny\bfseries, yshift=-1pt] {Input gate $\mathbf{I}_t$};
+    
+    % Output gate no meio da linha vertical que sobe livremente
+    \draw[->] (o_gate.north) -- ($(o_gate.north)+(0,1.0)$) node[midway, fill=white, inner sep=1pt, font=\tiny\bfseries] {Output gate $\mathbf{O}_t$};
+
 \end{tikzpicture}
-\caption{Schematic of an LSTM cell. The cell state $\mathbf{c}_t$ (not shown separately) flows through the top, modulated by gates.}
-\end{marginfigure}
+\caption{Corrected schematic of an LSTM cell. The memory flow arrows connect directly to the text variables, and all gate labels are mathematically centered along their internal routing lines.}
+\label{fig:lstm_perfect_routing}
+\end{figure}
+
+
+
 
 \subsection{Connection to Maximum Likelihood Estimation}
 
@@ -702,7 +1006,7 @@ For sequence prediction (e.g., language modeling), the RNN defines a conditional
 \[
 P(\mathbf{y}_t \mid \mathbf{x}_{1:t}, \mathbf{y}_{1:t-1}) = \text{softmax}(\mathbf{o}_t).
 \]
-The total likelihood of a sequence is $\prod_{t=1}^T P(\mathbf{y}_t \mid \text{history})$. Minimising the cross‑entropy loss is therefore equivalent to maximum likelihood estimation under the model.
+The total likelihood of a sequence is $\prod_{t=1}^T P(\mathbf{y}_t \mid \text{history})$. Minimising the cross-entropy loss is therefore equivalent to maximum likelihood estimation under the model.
 
 \section{Practical Considerations and Extensions}
 
@@ -729,10 +1033,10 @@ The total likelihood of a sequence is $\prod_{t=1}^T P(\mathbf{y}_t \mid \text{h
 
 \subsection{Attention Mechanisms}
 
-A limitation of RNNs (even with gating) is that the fixed‑dimensional hidden state $\mathbf{h}_t$ must compress the entire history. For long sequences, this bottleneck causes information loss. Attention mechanisms overcome this by allowing the decoder to directly access all encoder hidden states.
+A limitation of RNNs (even with gating) is that the fixed-dimensional hidden state $\mathbf{h}_t$ must compress the entire history. For long sequences, this bottleneck causes information loss. Attention mechanisms overcome this by allowing the decoder to directly access all encoder hidden states.
 
 \paragraph{Seq2Seq with Attention}
-In a sequence‑to‑sequence model, an encoder RNN processes the input sequence $\mathbf{x}_{1:T}$ and produces hidden states $\mathbf{h}_1,\dots,\mathbf{h}_T$. A decoder RNN generates the output sequence $\mathbf{y}_{1:T'}$. At each decoder step $s$, an attention mechanism computes a context vector $\mathbf{c}_s$ as a weighted sum of encoder states:
+In a sequence-to-sequence model, an encoder RNN processes the input sequence $\mathbf{x}_{1:T}$ and produces hidden states $\mathbf{h}_1,\dots,\mathbf{h}_T$. A decoder RNN generates the output sequence $\mathbf{y}_{1:T'}$. At each decoder step $s$, an attention mechanism computes a context vector $\mathbf{c}_s$ as a weighted sum of encoder states:
 \[
 e_{s,t} = \text{score}(\mathbf{d}_{s-1}, \mathbf{h}_t),\quad
 \alpha_{s,t} = \frac{\exp(e_{s,t})}{\sum_{t'=1}^T \exp(e_{s,t'})},\quad
@@ -747,11 +1051,11 @@ The score function is often additive (Bahdanau) or multiplicative (Luong). The c
     where $\mathbf{v}, \mathbf{W}_d, \mathbf{W}_h, \mathbf{b}$ are learnable parameters.
 \end{defn}
 
-\begin{defn}[Multiplicative (Dot‑Product) Attention]
+\begin{defn}[Multiplicative (Dot-Product) Attention]
     \[
     e_{s,t} = \mathbf{d}_{s-1}^{\mathsf{T}} \mathbf{W} \mathbf{h}_t,
     \]
-    where $\mathbf{W}$ is a learned matrix. If $\mathbf{W}$ is identity and norms are ignored, it becomes dot‑product attention.
+    where $\mathbf{W}$ is a learned matrix. If $\mathbf{W}$ is identity and norms are ignored, it becomes dot-product attention.
 \end{defn}
 
 \begin{marginfigure}
@@ -769,10 +1073,10 @@ The score function is often additive (Bahdanau) or multiplicative (Luong). The c
 \caption{Attention aligns decoder state $\mathbf{d}_{s-1}$ with encoder states $\mathbf{h}_t$ to form a context vector.}
 \end{marginfigure}
 
-Attention has become the cornerstone of modern sequence models. In particular, the Transformer architecture replaces recurrence entirely with self‑attention, achieving state‑of‑the‑art results in machine translation, language modeling, and beyond. However, attention is also used inside RNNs to handle long sequences effectively.
+Attention has become the cornerstone of modern sequence models. In particular, the Transformer architecture replaces recurrence entirely with self-attention, achieving state-of-the-art results in machine translation, language modeling, and beyond. However, attention is also used inside RNNs to handle long sequences effectively.
 
 \begin{thm}[Attention Bypasses Vanishing Gradients]
-    The attention mechanism provides a direct gradient path from the decoder loss to each encoder hidden state, independent of the distance between them. This effectively solves the vanishing gradient problem for long‑range dependencies.
+    The attention mechanism provides a direct gradient path from the decoder loss to each encoder hidden state, independent of the distance between them. This effectively solves the vanishing gradient problem for long-range dependencies.
 \end{thm}
 
 \subsection{Regularization for Recurrent Networks}
@@ -789,7 +1093,7 @@ where $\mathbf{m} \sim \text{Bernoulli}(p)$ is a fixed binary mask (same for all
 \begin{marginfigure}
 \centering
 \begin{tikzpicture}[scale=0.6]
-    \foreach \t in {1,2,3} {
+    \foreach \t [remember=\t as \prev (initially 0)] in {1,2,3} {
         \node[draw, circle, wp-primary] (h\t) at (\t*1.5,0) {$h_{t}$};
         \node[draw, circle, wp-muted] (x\t) at (\t*1.5,-1) {$x_t$};
         \draw[->] (x\t) -- (h\t);
@@ -808,14 +1112,14 @@ Zoneout (Krueger et al., 2017) stochastically replaces the computed hidden state
 where $\mathbf{z}_t \sim \text{Bernoulli}(p)$. This preserves information flow and helps with vanishing gradients.
 
 \paragraph{Layer Normalization for RNNs}
-Layer normalization (Ba et al., 2016) normalises the pre‑activation across the feature dimension:
+Layer normalization (Ba et al., 2016) normalises the pre-activation across the feature dimension:
 \[
 \mu_t = \frac{1}{d_h}\sum_{i=1}^{d_h} a_{t,i},\quad \sigma_t^2 = \frac{1}{d_h}\sum_{i=1}^{d_h} (a_{t,i} - \mu_t)^2,\quad \tilde{\mathbf{a}}_t = \frac{\mathbf{a}_t - \mu_t}{\sqrt{\sigma_t^2 + \epsilon}},\quad \mathbf{h}_t = \phi_h(\gamma \tilde{\mathbf{a}}_t + \beta).
 \]
 It stabilises training and is especially effective with LSTMs.
 
 \begin{remark}
-    In practice, a combination of variational dropout on recurrent connections and layer normalization is often used in state‑of‑the‑art RNNs (e.g., AWD‑LSTM).
+    In practice, a combination of variational dropout on recurrent connections and layer normalization is often used in state-of-the-art RNNs (e.g., AWD-LSTM).
 \end{remark}
 
 \subsection{Probabilistic Recurrent Neural Networks}
@@ -857,14 +1161,14 @@ VRNNs can generate highly structured sequences (e.g., handwriting, speech) and q
 
 \subsection{Memory Augmented RNNs}
 
-Standard RNNs compress all history into a fixed‑dimensional hidden state, which limits long‑term memory. Memory augmented networks introduce an external memory matrix that the RNN can read from and write to.
+Standard RNNs compress all history into a fixed-dimensional hidden state, which limits long-term memory. Memory augmented networks introduce an external memory matrix that the RNN can read from and write to.
 
 \begin{defn}[Neural Turing Machine (NTM)]
     An NTM consists of:
     \begin{itemize}
         \item A controller (RNN) that outputs read/write vectors.
         \item A memory matrix $\mathbf{M}_t \in \mathbb{R}^{N \times M}$ (size $N$ vectors of dimension $M$).
-        \item Read heads produce content‑based and location‑based addressing.
+        \item Read heads produce content-based and location-based addressing.
     \end{itemize}
     At each step, the controller reads $\mathbf{r}_t = \sum_i \alpha_i^{\text{read}} \mathbf{M}_t[i,:]$, where $\boldsymbol{\alpha}^{\text{read}}$ is an attention distribution.
     Writing combines an erase vector $\mathbf{e}_t$ and an add vector $\mathbf{a}_t$:
@@ -904,7 +1208,7 @@ When data are graphs (e.g., molecules, social networks), sequential ordering is 
     After $T$ steps, the final node states are used for predictions (e.g., graph classification).
 \end{defn}
 
-GGNNs are a special case of message‑passing neural networks. They can handle cycles and learn long‑range dependencies on graphs.
+GGNNs are a special case of message-passing neural networks. They can handle cycles and learn long-range dependencies on graphs.
 
 \begin{marginfigure}
 \centering
@@ -918,16 +1222,16 @@ GGNNs are a special case of message‑passing neural networks. They can handle c
 \caption{In a Graph RNN, each node’s state is updated using messages from neighbours.}
 \end{marginfigure}
 
-\subsection{Continuous‑Time RNNs: Neural ODEs}
+\subsection{Continuous-Time RNNs: Neural ODEs}
 
 Standard RNNs assume a discrete time index. Neural ODEs (Chen et al., 2018) treat the hidden state as a continuous function of time.
 
-\begin{defn}[ODE‑RNN]
+\begin{defn}[ODE-RNN]
     The hidden state evolution is governed by an ordinary differential equation:
     \[
     \frac{d\mathbf{h}(t)}{dt} = f_\theta(\mathbf{h}(t), \mathbf{x}(t)),
     \]
-    where $\mathbf{x}(t)$ is a continuous‑time input (e.g., interpolated from discrete observations). The state at observation times is obtained by integration:
+    where $\mathbf{x}(t)$ is a continuous-time input (e.g., interpolated from discrete observations). The state at observation times is obtained by integration:
     \[
     \mathbf{h}(t_n) = \mathbf{h}(t_{n-1}) + \int_{t_{n-1}}^{t_n} f_\theta(\mathbf{h}(\tau), \mathbf{x}(\tau)) \, d\tau.
     \]
@@ -950,7 +1254,7 @@ Connection to RNNs: An RNN can be seen as a discretisation of an ODE using a sim
 \[
 \mathbf{h}_t - \mathbf{h}_{t-1} = f_\theta(\mathbf{h}_{t-1}, \mathbf{x}_t).
 \]
-Neural ODEs replace the fixed step with an adaptive ODE solver, providing a more flexible and theoretically grounded model for continuous‑time dynamics.
+Neural ODEs replace the fixed step with an adaptive ODE solver, providing a more flexible and theoretically grounded model for continuous-time dynamics.
 
 \subsection{Evaluation Metrics for Sequence Models}
 
@@ -978,7 +1282,7 @@ p_n = \frac{\text{\# of $n$-grams in candidate that appear in reference}}{\text{
 Typically $N=4$ and $w_n = 1/N$.
 
 \paragraph{ROUGE (Summarisation)}
-ROUGE (Recall‑Oriented Understudy for Gisting Evaluation) computes recall of $n$-grams and longest common subsequences. ROUGE‑N is $n$-gram recall: $\frac{\sum_{n\text{-gram} \in \text{ref}} \min(\text{count}_{\text{ref}}, \text{count}_{\text{cand}})}{\sum_{n\text{-gram} \in \text{ref}} \text{count}_{\text{ref}}}$.
+ROUGE (Recall-Oriented Understudy for Gisting Evaluation) computes recall of $n$-grams and longest common subsequences. ROUGE-N is $n$-gram recall: $\frac{\sum_{n\text{-gram} \in \text{ref}} \min(\text{count}_{\text{ref}}, \text{count}_{\text{cand}})}{\sum_{n\text{-gram} \in \text{ref}} \text{count}_{\text{ref}}}$.
 
 \begin{remark}
     No single metric captures all aspects of quality. BLEU correlates weakly with human judgment; newer metrics like BERTScore (using contextual embeddings) are gaining popularity.
@@ -992,16 +1296,16 @@ Once an RNN is trained, we can generate new sequences by sampling from the learn
 At each step $t$, choose $\hat{y}_t = \arg\max P(y_t \mid \text{history})$. This is fast but can lead to repetitive or suboptimal sequences.
 
 \paragraph{Beam Search}
-Maintain a set of $k$ (beam width) best candidate sequences. At each step, expand each candidate by all possible next tokens, keep the top $k$ overall. Beam search often produces higher‑quality outputs.
+Maintain a set of $k$ (beam width) best candidate sequences. At each step, expand each candidate by all possible next tokens, keep the top $k$ overall. Beam search often produces higher-quality outputs.
 
 \paragraph{Sampling with Temperature}
 The output softmax distribution is often sharpened or flattened using a temperature parameter $\tau$:
 \[
 P(y_t = i \mid \text{history}) = \frac{\exp(z_i / \tau)}{\sum_j \exp(z_j / \tau)},
 \]
-where $z_i$ are the pre‑softmax logits. For $\tau \to 0$, sampling approaches greedy (deterministic); for $\tau = 1$, we recover the original distribution; for $\tau \to \infty$, the distribution becomes uniform. This controls the “creativity” of the generated text.
+where $z_i$ are the pre-softmax logits. For $\tau \to 0$, sampling approaches greedy (deterministic); for $\tau = 1$, we recover the original distribution; for $\tau \to \infty$, the distribution becomes uniform. This controls the “creativity” of the generated text.
 
-\begin{exmp}[Character‑Level RNN Sampling]
+\begin{exmp}[Character-Level RNN Sampling]
     A character RNN trained on Shakespeare can generate new text by starting with a seed character, then repeatedly sampling the next character from the predicted distribution (with, say, $\tau = 0.8$). The generated text often mimics the style of the original corpus.
 \end{exmp}
 
@@ -1022,7 +1326,7 @@ where $z_i$ are the pre‑softmax logits. For $\tau \to 0$, sampling approaches 
 Despite their success, RNNs have fundamental limitations that remain active research areas.
 
 \paragraph{Turing Completeness and Precision}
-Siegelmann \& Sontag (1995) proved that RNNs with rational weights are Turing‑complete. However, this requires infinite precision. In practice, finite precision limits memory capacity; an RNN with $d_h$ hidden units can only store $\mathcal{O}(d_h \log d_h)$ bits of information, making it impossible to emulate arbitrary long‑range dependencies beyond a certain length.
+Siegelmann \& Sontag (1995) proved that RNNs with rational weights are Turing-complete. However, this requires infinite precision. In practice, finite precision limits memory capacity; an RNN with $d_h$ hidden units can only store $\mathcal{O}(d_h \log d_h)$ bits of information, making it impossible to emulate arbitrary long-range dependencies beyond a certain length.
 
 \paragraph{The Expressivity vs. Trainability Tradeoff}
 Deep (stacked) RNNs can represent complex functions, but they suffer from vanishing/exploding gradients even with gating. While LSTMs and GRUs alleviate the issue for sequences of hundreds of steps, they still struggle with dependencies spanning thousands of steps (e.g., language modeling over full books). Attention mechanisms largely solve this but move away from recurrence.
@@ -1034,22 +1338,22 @@ To enforce gradient preservation, researchers have constrained $\mathbf{W}_{hh}$
     If $\mathbf{W}_{hh}$ is unitary ($\mathbf{W}_{hh}^{\mathsf{H}} \mathbf{W}_{hh} = \mathbf{I}$) and $\phi_h$ is identity, then $\|\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_{t-k}}\| = 1$ for all $k$.
 \end{thm}
 
-\paragraph{The Fundamental Bottleneck of Fixed‑Size Hidden States}
-No matter how many units, a fixed‑size hidden state cannot store unlimited information. This is the justification for external memory (NTM/DNC) and attention (which accesses all past states). However, attention has quadratic cost in sequence length, leading to the current research frontier: efficient transformers and linear RNNs (e.g., RWKV, S4).
+\paragraph{The Fundamental Bottleneck of Fixed-Size Hidden States}
+No matter how many units, a fixed-size hidden state cannot store unlimited information. This is the justification for external memory (NTM/DNC) and attention (which accesses all past states). However, attention has quadratic cost in sequence length, leading to the current research frontier: efficient transformers and linear RNNs (e.g., RWKV, S4).
 
 \paragraph{Recurrent vs. Convolutional vs. Transformer Tradeoffs}
 \begin{itemize}
-    \item RNNs: linear time and memory in $T$, but weak long‑range memory.
-    \item CNNs (e.g., WaveNet): parallel training, but require many layers for long‑range dependencies.
-    \item Transformers: excellent long‑range memory, but quadratic cost (addressed by sparse attention, linear attention).
+    \item RNNs: linear time and memory in $T$, but weak long-range memory.
+    \item CNNs (e.g., WaveNet): parallel training, but require many layers for long-range dependencies.
+    \item Transformers: excellent long-range memory, but quadratic cost (addressed by sparse attention, linear attention).
 \end{itemize}
 No single architecture dominates all regimes; the choice depends on sequence length, hardware, and task structure.
 
 
 \section{Summary}
 
-Recurrent Neural Networks provide a principled framework for modeling sequential data by maintaining an internal state that evolves over time. The training procedure, backpropagation through time, is a direct extension of the backpropagation algorithm for feedforward networks but must handle weight sharing across time. The vanishing and exploding gradient problems are inherent to simple RNNs; gated architectures (LSTM, GRU) are the standard solution. These models form the basis of modern sequence‑to‑sequence learning, machine translation, speech recognition, and many other applications.
+Recurrent Neural Networks provide a principled framework for modeling sequential data by maintaining an internal state that evolves over time. The training procedure, backpropagation through time, is a direct extension of the backpropagation algorithm for feedforward networks but must handle weight sharing across time. The vanishing and exploding gradient problems are inherent to simple RNNs; gated architectures (LSTM, GRU) are the standard solution. These models form the basis of modern sequence-to-sequence learning, machine translation, speech recognition, and many other applications.
 
-The mathematical tools developed in earlier chapters – probability, MLE, gradient descent, and information theory – all play a role in understanding and training RNNs. The next logical step is to explore attention mechanisms and transformers, which have largely replaced RNNs in many domains but still rely on the same foundational concepts.
+The mathematical tools developed in earlier chapters - probability, MLE, gradient descent, and information theory - all play a role in understanding and training RNNs. The next logical step is to explore attention mechanisms and transformers, which have largely replaced RNNs in many domains but still rely on the same foundational concepts.
 
 \end{document}

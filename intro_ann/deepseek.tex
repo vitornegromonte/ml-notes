@@ -140,7 +140,7 @@ vector $\mathbf{w}$ acts orthogonal to the separating hyperplane.}
 \end{marginfigure}
 
 
-\begin{marginfigure}[-3.0cm]
+\begin{marginfigure}[-2.0cm]
 \centering
 \begin{tikzpicture}[scale=1.1, >=latex]
 
@@ -267,13 +267,12 @@ with learning rate $\eta>0$. This converges if the data are linearly separable.
 
 \end{tikzpicture}
 \end{adjustbox}
-\caption{Spatial evolution of perceptron weight updates during shape classification. 
+\end{figure}
+Spatial evolution of perceptron weight updates during shape classification. 
 Over training iterations, the weight matrix transitions from unstructured noise ($\mathbf{W}^{(0)}$) to an 
 interpretable morphology ($\mathbf{W}^*$). The converged state functions as a spatial template matcher, 
 where pixels tracking the circular boundary develop strong excitatory values (gold) while the surrounding 
-corners and center become strongly inhibitory (muted earth tones).}
-\end{figure}
-
+corners and center become strongly inhibitory (muted earth tones).s
 
 \subsubsection{Delta Rule and Gradient Descent}
 For a linear unit $o = \mathbf{w}\cdot\mathbf{x}$ (no threshold), the squared error is
@@ -567,20 +566,48 @@ Recall from statistical learning the decomposition for squared loss:
 \mathbb{E}_{\mathcal{D}}[R(h_{\mathcal{D}})] = \underbrace{(\mathbb{E}_{\mathcal{D}}[h_{\mathcal{D}}] - h^*)^2}_{\text{bias}^2} + \underbrace{\mathbb{V}_{\mathcal{D}}[h_{\mathcal{D}}]}_{\text{variance}} + \text{noise}.
 \]
 
-In neural networks, model capacity increases with the number of layers and neurons. Low capacity → high bias (underfitting). High capacity → low bias but high variance (overfitting). Regularization and early stopping control the effective capacity, trading bias against variance.
-
 \begin{marginfigure}
 \centering
-\begin{tikzpicture}[scale=0.6]
-    \begin{axis}[width=4.5cm, height=3cm, xlabel=Model capacity, ylabel=Error, domain=0:1, samples=50, axis lines=middle, enlargelimits]
-        \addplot[wp-primary, thick] {0.1 + 0.5*(x-0.2)^2}; % bias^2
-        \addplot[wp-accent, thick] {0.5*exp(5*(x-0.6))}; % variance
-        \addplot[wp-muted, thick, dashed] {0.1 + 0.5*(x-0.2)^2 + 0.5*exp(5*(x-0.6))}; % total
+\begin{tikzpicture}[scale=1.3]
+    \begin{axis}[
+        width=4.5cm, height=4.5cm, 
+        xlabel=Model complexity, 
+        ylabel=Error, 
+        domain=0:1, 
+        samples=100,
+        xmin=0, xmax=1,
+        ymin=0, ymax=4,
+        xtick={0, 0.5, 1},
+        ytick={0, 2, 4},
+        axis x line=bottom, 
+        axis y line=left, 
+        enlargelimits=false, % Desativado para os eixos começarem cravados no zero
+        xlabel style={at={(axis description cs:0.5,-0.15)}, anchor=north},
+        ylabel style={at={(axis description cs:-0.15,0.5)}, anchor=south}, % Corrigido o espelhamento do texto
+        legend style={
+            font=\scriptsize, % Define o tamanho da fonte da legenda
+            nodes={scale=0.6, transform shape}, % Reduz o tamanho do texto e dos símbolos
+            inner sep=2pt, % Diminui o espaçamento interno da caixa da legenda
+            at={(1,1)}, 
+            anchor=north east
+        }]
+        % 1. BIAS^2: Decai exponencialmente conforme o modelo ganha capacidade
+        \addplot[wp-primary, thick] {3.5 * exp(-3.5*x)}; 
+        
+        % 2. VARIANCE: Cresce exponencialmente conforme o modelo ganha capacidade
+        \addplot[wp-accent, thick] {0.1 + 0.2 * exp(3*x)}; 
+        
+        % 3. TOTAL ERROR: A soma de ambos cria a parábola/curva em U perfeita
+        \addplot[wp-muted, thick, dashed] {3.5 * exp(-3.5*x) + 0.1 + 0.2 * exp(3*x)}; 
+        
         \legend{bias$^2$, variance, total};
     \end{axis}
 \end{tikzpicture}
-\caption{Bias–variance tradeoff: total error has a minimum at optimal capacity.}
+\caption{Bias-variance tradeoff: total error has a minimum at optimal capacity.}
+\label{fig:bias_variance_tradeoff}
 \end{marginfigure}
+
+In neural networks, model capacity increases with the number of layers and neurons. Low capacity → high bias (underfitting). High capacity → low bias but high variance (overfitting). Regularization and early stopping control the effective capacity, trading bias against variance.
 
 \subsection{Universal Approximation Theorem}
 
