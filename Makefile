@@ -1,33 +1,45 @@
 PDFLATEX = pdflatex -interaction=nonstopmode -halt-on-error
 
 # Build every topic
-all: intro-ann genai rnn statistics world-models world-models-beamer
+all: intro-ann statistical-foundation genai rnn statistics world-models world-models-beamer
 
 ## ---- Intro to ANNs ----
-intro-ann: intro-ann/deepseek.pdf intro-ann/main-en-tufte.pdf intro-ann/main-pt-tufte.pdf
+intro-ann: intro-ann/intro-ann.pdf intro-ann/main-pt-tufte.pdf
 
-intro-ann/deepseek.pdf: intro-ann/deepseek.tex
-	$(PDFLATEX) -output-directory=intro-ann intro-ann/deepseek.tex
-	$(PDFLATEX) -output-directory=intro-ann intro-ann/deepseek.tex
-
-intro-ann/main-en-tufte.pdf: intro-ann/main-en-tufte.tex
-	$(PDFLATEX) -output-directory=intro-ann intro-ann/main-en-tufte.tex
+intro-ann/intro-ann.pdf: intro-ann/intro-ann.tex
+	$(PDFLATEX) -output-directory=intro-ann intro-ann/intro-ann.tex
+	$(PDFLATEX) -output-directory=intro-ann intro-ann/intro-ann.tex
 
 intro-ann/main-pt-tufte.pdf: intro-ann/main-pt-tufte.tex
 	$(PDFLATEX) -output-directory=intro-ann intro-ann/main-pt-tufte.tex
 
-## ---- Generative models for images ----
-genai: genai-imagen/genai-si-tufte-attractor.pdf
+## ---- Statistical foundations of ML ----
+statistical-foundation: intro-ann/statistical-foundation/found.pdf intro-ann/statistical-foundation/isl.pdf
 
-genai-imagen/genai-si-tufte-attractor.pdf: genai-imagen/genai-si-tufte-attractor.tex
-	$(PDFLATEX) -output-directory=genai-imagen genai-imagen/genai-si-tufte-attractor.tex
-	$(PDFLATEX) -output-directory=genai-imagen genai-imagen/genai-si-tufte-attractor.tex
+intro-ann/statistical-foundation/found.pdf: intro-ann/statistical-foundation/found.tex
+	$(PDFLATEX) -output-directory=intro-ann/statistical-foundation intro-ann/statistical-foundation/found.tex
+
+intro-ann/statistical-foundation/isl.pdf: intro-ann/statistical-foundation/isl.tex
+	$(PDFLATEX) -output-directory=intro-ann/statistical-foundation intro-ann/statistical-foundation/isl.tex
+
+## ---- Generative models for images ----
+genai: genai-imagen/genai-attractor.pdf genai-imagen/image-complete(deepseek).pdf
+
+genai-imagen/genai-attractor.pdf: genai-imagen/genai-attractor.tex
+	$(PDFLATEX) -output-directory=genai-imagen genai-imagen/genai-attractor.tex
+	$(PDFLATEX) -output-directory=genai-imagen genai-imagen/genai-attractor.tex
+
+genai-imagen/image-complete(deepseek).pdf: genai-imagen/image-complete(deepseek).tex
+	$(PDFLATEX) -output-directory=genai-imagen "genai-imagen/image-complete(deepseek).tex"
 
 ## ---- Recurrent Neural Networks ----
-rnn: rnn/rnn2.pdf
+rnn: rnn/rnn2.pdf rnn/rnn.pdf
 
 rnn/rnn2.pdf: rnn/rnn2.tex
 	$(PDFLATEX) -output-directory=rnn rnn/rnn2.tex
+
+rnn/rnn.pdf: rnn/rnn.tex
+	$(PDFLATEX) -output-directory=rnn rnn/rnn.tex
 
 ## ---- Probability & statistics ----
 statistics: statistics/probability-ml.pdf
@@ -64,4 +76,4 @@ clean:
 	rm -f statistics/*.aux statistics/*.log statistics/*.toc statistics/*.out
 	rm -f world-models/*.aux world-models/*.log world-models/*.toc world-models/*.out world-models/*.bbl world-models/*.blg
 
-.PHONY: all intro-ann genai rnn statistics world-models world-models-beamer template clean
+.PHONY: all intro-ann statistical-foundation genai rnn statistics world-models world-models-beamer template clean
