@@ -1,0 +1,83 @@
+% GAN — Arquitetura Otimizada (Texto de Retropropagação Interno e Centralizado)
+% Uso: \input{resources/gan/gan-architecture.tex}
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=latex,
+    box/.style={draw=wp-text, fill=wp-light, rounded corners=2pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\small},
+    gen/.style={draw=wp-accent, fill=wp-accent!10, rounded corners=2pt, minimum width=2.4cm, minimum height=1.2cm, align=center, font=\small},
+    disc/.style={draw=wp-primary, fill=wp-primary!10, rounded corners=2pt, minimum width=2.4cm, minimum height=1.2cm, align=center, font=\small},
+    data/.style={draw=wp-text, fill=wp-code, rounded corners=2pt, minimum width=1.8cm, minimum height=1.0cm, align=center, font=\small},
+    conn/.style={->, draw=wp-text, thick},
+    label/.style={font=\footnotesize, text=wp-primary},
+    tuftebox/.style={draw=wp-light, fill=wp-code, rounded corners=2pt, align=center},
+    genbox/.style={draw=wp-accent, dashed, line width=0.8pt, fill=none, rounded corners=4pt, minimum width=5.6cm, minimum height=4.2cm, align=center},
+    discbox/.style={draw=wp-primary, dashed, line width=0.8pt, fill=none, rounded corners=4pt, minimum width=6.8cm, minimum height=4.2cm, align=center},
+    phase/.style={draw=wp-primary, fill=wp-bg, circle, inner sep=2.5pt, font=\scriptsize\bfseries}
+]
+
+% =========================================================================
+% FASE 1: GERAÇÃO (Container wp-accent à Esquerda)
+% =========================================================================
+\node[genbox] (g_container) at (1.6, 0.7) {};
+\node[label, above, text=wp-accent] at (g_container.north) {Geração};
+
+\node[box] (z) at (0, 0.7) {$z \sim p_z(z)$};
+\node[gen] (G) at (3.2, 0.7) {$G$\\[2pt]\footnotesize$\theta_G$};
+
+\draw[conn] (z) -- (G);
+
+
+% =========================================================================
+% FASE 2: DISCRIMINAÇÃO (Container wp-primary ao Centro)
+% =========================================================================
+\node[discbox] (d_container) at (9.6, 0.7) {};
+\node[label, above, text=wp-primary] at (d_container.north) {Discriminação};
+
+\node[data] (fake) at (7.4, 1.6) {$G(z)$};
+\node[data] (real) at (7.4, -0.2) {$\mathbf{x}$};
+\node[disc] (D)    at (11.2, 0.7) {$D$\\[2pt]\footnotesize$\theta_D$};
+
+\draw[conn] (G.east) -- ++(0.4,0) |- (fake.west);
+\draw[conn] (fake.east) -| (D.110);
+\draw[conn] (real.east) -| (D.250);
+
+
+% =========================================================================
+% SAÍDA: AVALIAÇÃO DA PROBABILIDADE (Extrema Direita)
+% =========================================================================
+\node[box, fill=wp-code, draw=wp-text] (out) at (14.6, 0.7) {$D(\cdot) \in [0,1]$};
+\draw[conn] (D) -- (out);
+
+
+% =========================================================================
+% INDICADORES NUMÉRICOS DAS FASES
+% =========================================================================
+\node[phase, text=wp-accent, draw=wp-accent] at (-0.9, 2.5) {1};
+\node[phase, text=wp-primary, draw=wp-primary] at (6.5, 2.5) {2};
+
+
+% =========================================================================
+% FEEDBACK LOOP (Seta Externa de Retorno)
+% =========================================================================
+\draw[->, draw=wp-accent, thick, rounded corners=6pt] 
+    (out.south) -- (14.6, -2.5) -- (0, -2.5) -- (z.south);
+
+% AJUSTE: Centralizado em x=7.3 e jogado para o lado de dentro (anchor=south)
+\node[font=\itshape\footnotesize, text=wp-accent, anchor=south] at (7.3, -2.5) 
+    {atualizar $\theta_G$ via retropropagação};
+
+
+% =========================================================================
+% EQUAÇÃO DE LOSS CENTRALIZADA NA BASE
+% =========================================================================
+\node[tuftebox, minimum width=10.0cm, minimum height=0.6cm, inner sep=4pt, anchor=north] at (7.3, -3.2) {
+    \scriptsize $\min_G \max_D V(D,G) = \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p_z}[\log(1-D(G(z)))]$
+};
+
+\end{tikzpicture}
+}
+\caption{Arquitetura de uma GAN. Jogo adversarial de soma zero entre o gerador $G$ e o discriminador $D$.}
+\label{fig:gan-architecture}
+\end{figure}

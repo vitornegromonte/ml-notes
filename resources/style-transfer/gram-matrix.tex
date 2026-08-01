@@ -1,0 +1,121 @@
+% Style Transfer — Cálculo da Matriz de Gram
+% Uso: \input{resources/style-transfer/gram-matrix.tex}
+\begin{figure*}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=latex,
+    box/.style={draw=wp-text, fill=wp-light, rounded corners=2pt, 
+                minimum width=1.6cm, minimum height=1.0cm, 
+                align=center, font=\small},
+    fm/.style={draw=wp-text, fill=wp-code, rounded corners=2pt, 
+               minimum width=1.8cm, minimum height=0.6cm, 
+               align=center, font=\small},
+    conn/.style={->, draw=wp-text, thick},
+    label/.style={font=\small, text=wp-primary}
+]
+
+% =========================================================================
+% ENTRADA E CAMADA CNN
+% =========================================================================
+\node[box] (img) at (0, 0) {Imagem\\$\mathcal{I}$};
+\node[box, draw=wp-accent, fill=wp-accent!10] (cnn) at (2.8, 0) {conv$_l$};
+\draw[conn] (img) -- (cnn);
+
+% =========================================================================
+% MAPAS DE CARACTERÍSTICAS
+% =========================================================================
+\node[fm] (fm1) at (6.0,  1.35) {$F^l_1$};
+\node[fm] (fm2) at (6.0,  0.45) {$F^l_2$};
+\node[font=\small] at (6.0, -0.30) {$\vdots$};
+\node[fm] (fmN) at (6.0, -1.25) {$F^l_{N}$};
+
+\coordinate (branch) at ($(cnn.east) + (0.4, 0)$);
+\draw[conn] (cnn.east) -- (branch);
+\draw[conn] (branch) |- (fm1.west);
+\draw[conn] (branch) |- (fm2.west);
+\draw[conn] (branch) |- (fmN.west);
+
+
+\node[label, text=wp-text, font=\small, align=center] at (6.0, -2.1) 
+    {Cada mapa com $M = H \times W$ elementos};
+
+\node[font=\small, text=wp-text, align=center] at (6.0, 2.5) 
+    {Camada $l$ da CNN:\\$N$ mapas de características};
+
+% =========================================================================
+% MATRIZ VETORIZADA F^l
+% =========================================================================
+\node[draw=wp-accent, fill=wp-accent!10, rounded corners=2pt, 
+      minimum width=0.6cm, minimum height=3.6cm] (matrix_F) at (9.2, 0.0) {};
+
+\node[font=\tiny] at (9.2,  1.35) {$\mathbf{f}_1$};
+\node[font=\tiny] at (9.2,  0.45) {$\mathbf{f}_2$};
+\node[font=\tiny] at (9.2, -0.30) {$\vdots$};
+\node[font=\tiny] at (9.2, -1.25) {$\mathbf{f}_N$};
+
+\draw[conn, draw=wp-accent] (fm1.east) -- (matrix_F.west |- fm1);
+\draw[conn, draw=wp-accent] (fm2.east) -- (matrix_F.west |- fm2);
+\draw[conn, draw=wp-accent] (fmN.east) -- (matrix_F.west |- fmN);
+
+\node[label, text=wp-accent, font=\small, above=3pt] at (matrix_F.north) {vetorizar};
+\node[font=\tiny, text=wp-accent, rotate=90, anchor=south] at ([xshift=-8pt]matrix_F.west) {$N \times M$};
+
+% =========================================================================
+% HEATMAP (desenhado diretamente — sem tikzpicture aninhado)
+% =========================================================================
+\def\cs{0.46}  % tamanho da célula
+\def\gn{5}     % grade 5×5
+\pgfmathsetmacro{\totalW}{\gn*\cs}
+\pgfmathsetmacro{\gramX}{13.4 - \totalW/2}
+\pgfmathsetmacro{\gramY}{0.0 + \totalW/2}
+
+% Fundo arredondado
+\fill[wp-primary!5, rounded corners=3pt] 
+    (\gramX-0.1, \gramY+0.1) rectangle (\gramX+\totalW+0.1, \gramY-\totalW-0.1);
+
+% Células com padrão simétrico
+\foreach \i in {0,...,4}{
+    \foreach \j in {0,...,4}{
+        \pgfmathtruncatemacro{\val}{15 + abs(\i-\j)*5 + min(\i,\j)*8}
+        \fill[wp-primary!\val] 
+            (\gramX+\i*\cs, \gramY-\j*\cs) rectangle ++(\cs, -\cs);
+    }
+}
+
+% Borda
+\draw[wp-text, thick, rounded corners=3pt] 
+    (\gramX-0.1, \gramY+0.1) rectangle (\gramX+\totalW+0.1, \gramY-\totalW-0.1);
+
+% Dimensão
+\node[wp-text, font=\small, anchor=north] at (\gramX+\totalW/2, \gramY-\totalW-0.15) {$N \times N$};
+
+% Âncoras nomeadas para conexões
+\coordinate (gramWest) at (\gramX-0.1, \gramY-\totalW/2);
+\coordinate (gramNorth) at (\gramX+\totalW/2, \gramY+0.1);
+
+% =========================================================================
+% SETA DO PRODUTO MATRICIAL
+% =========================================================================
+\draw[conn, very thick, draw=wp-accent] 
+    (matrix_F.east) -- 
+    node[above, font=\small, text=wp-text, yshift=1pt] {$G^l = F^l (F^l)^{\!\top}$} 
+    (gramWest);
+
+% =========================================================================
+% EQUAÇÃO
+% =========================================================================
+\node[font=\small, text=wp-text, align=center] (eq) at (\gramX+\totalW/2, \gramY+1.4) {
+    \textbf{Matriz de Gram $G^l$}\\[4pt]
+    $G^l_{ij} = \displaystyle\sum_{k=1}^{M} F^l_{ik}\, F^l_{jk}$
+};
+\draw[->, draw=wp-text!40, thick] (eq.south) -- (gramNorth);
+
+\end{tikzpicture}
+}
+\caption{Cálculo da Matriz de Gram na camada $l$. Os $N$ mapas de características 
+são vetorizados e organizados na matriz $F^l$ de dimensão $N \times M$. O produto 
+ $F^l (F^l)^{\!\top}$ gera a matriz de Gram $G^l$ de tamanho $N \times N$, onde cada 
+elemento $G^l_{ij}$ mede a correlação entre os mapas $i$ e $j$.}
+\label{fig:gram-matrix}
+\end{figure*}

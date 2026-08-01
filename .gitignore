@@ -1,6 +1,28 @@
-.dat
-.script
-.out
-.toc
-.log
-.aux
+# LaTeX auxiliary files
+*.aux
+*.log
+*.toc
+*.out
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.lol
+*.lof
+*.lot
+*.md5
+*.run.xml
+*-blx.bib
+*.bcf
+*.nav
+*.snm
+*.vrb
+*.synctex.gz
+*.auxlock
+
+# Template compiled output
+template/output/
+
+# Other
+*.dat
+*.script

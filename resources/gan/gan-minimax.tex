@@ -1,0 +1,136 @@
+% GAN — Jogo Minimax (Superfície de Sela 3D Ampliada + Cortes 1D)
+% Uso: \input{resources/gan/gan-minimax.tex}
+\begin{figure*}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=latex,
+    conn/.style={->, wp-primary, thick},
+    tuftebox/.style={draw=wp-light, fill=wp-code, rounded corners=2pt, align=center}
+]
+
+% =========================================================================
+% ESQUERDA: SUPERFÍCIE DE SELA 3D — V = a(θ_G² − θ_D²) (Escala Ampliada)
+% =========================================================================
+% MODIFICAÇÃO: Fatores de projeção geométrica aumentados para expandir o gráfico
+\pgfmathsetmacro{\sx}{1.15}
+\pgfmathsetmacro{\sy}{0.55}
+\pgfmathsetmacro{\sz}{0.28}
+\pgfmathsetmacro{\amp}{0.25}
+\pgfmathsetmacro{\cx}{3.2}
+\pgfmathsetmacro{\cy}{3.0}
+
+% --- Malha: linhas ao longo de θ_G (θ_D fixo) ---
+\foreach \yy in {-2.0,-1.5,...,2.0} {
+    \draw[wp-muted!75] plot[domain=-2.6:2.6, samples=50, smooth]
+        ({\cx + \x*\sx - \yy*\sy},
+         {\cy - \yy*\sz + \amp*(\x*\x - \yy*\yy)});
+}
+
+% --- Malha: linhas ao longo de θ_D (θ_G fixo) ---
+\foreach \xx in {-2.0,-1.5,...,2.0} {
+    \draw[wp-muted!75] plot[domain=-2.0:2.0, samples=50, smooth, variable=\y]
+        ({\cx + \xx*\sx - \y*\sy},
+         {\cy - \y*\sz + \amp*(\xx*\xx - \y*\y)});
+}
+
+% --- Crista ao longo de θ_D (θ_G = 0): D maximiza ---
+\draw[wp-accent, thick] plot[domain=-2.0:2.0, samples=60, smooth, variable=\y]
+    ({\cx - \y*\sy}, {\cy - \y*\sz - \amp*\y*\y});
+
+% --- Vale ao longo de θ_G (θ_D = 0): G minimiza ---
+\draw[wp-primary, thick] plot[domain=-2.6:2.6, samples=60, smooth]
+    ({\cx + \x*\sx}, {\cy + \amp*\x*\x});
+
+% --- Assíntotas no plano base (V = 0 → θ_G = ±θ_D) ---
+\draw[wp-muted!30, densely dashed]
+    ({\cx - 2.6*\sx - 2.6*\sy}, {\cy + 2.6*\sz}) --
+    ({\cx + 2.6*\sx + 2.6*\sy}, {\cy - 2.6*\sz});
+\draw[wp-muted!30, densely dashed]
+    ({\cx - 2.6*\sx + 2.6*\sy}, {\cy - 2.6*\sz}) --
+    ({\cx + 2.6*\sx - 2.6*\sy}, {\cy + 2.6*\sz});
+
+% --- Eixos 3D ---
+\draw[->, wp-text, thick] (\cx, \cy) -- ({\cx + 3.2*\sx}, \cy)
+    node[right, font=\large] {$\theta_G$};
+\draw[->, wp-text, thick] (\cx, \cy) -- ({\cx - 3.0*\sy}, {\cy - 3.0*\sz})
+    node[below left, font=\large] {$\theta_D$};
+\draw[->, wp-text, thick] (\cx, \cy) -- (\cx, {\cy + 3.2})
+    node[above, font=\large] {$V$};
+
+% --- Ponto de sela ---
+\fill[wp-primary] (\cx, \cy) circle (0.12);
+\node[above right=2pt, font=\small\bfseries, text=wp-text] at (\cx, \cy) {Ponto de Sela};
+
+% --- Seta de D: converge ao longo da crista ---
+\pgfmathsetmacro{\dsx}{\cx - 1.6*\sy}
+\pgfmathsetmacro{\dsy}{\cy - 1.6*\sz - \amp*2.56}
+\draw[->, wp-accent, very thick] (\dsx, \dsy) -- (\cx, \cy);
+\node[font=\normalsize\bfseries, text=wp-accent, below left=6pt] at (\dsx, \dsy) {$D$ (max)};
+
+% --- Seta de G: converge ao longo do vale ---
+\pgfmathsetmacro{\gsx}{\cx + 1.6*\sx}
+\pgfmathsetmacro{\gsy}{\cy + \amp*2.56}
+\draw[->, wp-primary, very thick] (\gsx, \gsy) -- (\cx, \cy);
+\node[font=\normalsize\bfseries, text=wp-primary, above right=12pt] at (\gsx, \gsy) {$G$ (min)};
+
+
+% =========================================================================
+% DIREITA: CORTES 1D ATRAVÉS DO PONTO DE SELA (Deslocado para dar Respiro)
+% =========================================================================
+% AJUSTE: shift expandido de 10.5 para 12.5 para acomodar o crescimento do 3D
+\begin{scope}[shift={(12.5, 0)}]
+
+\draw[->, wp-text, thick] (0, 0) -- (7, 0) node[right, font=\large] {parâmetro};
+\draw[->, wp-text, thick] (0, 0) -- (0, 6.2) node[above, font=\large] {$V(D,\mathcal{G})$};
+
+% Linha de referência no valor de sela
+\draw[wp-muted!00, thin] (0.3, 3.0) -- (6.7, 3.0);
+\node[font=\tiny, text=wp-muted, anchor=east] at (0.3, 3.15) {$V^*$};
+
+% Corte ao longo de θ_D: côncava ↓ (máximo no ponto de sela)
+\draw[wp-primary, very thick] plot[domain=0.5:6.5, samples=80, smooth] ({\x}, {3.0 - 0.32*(\x - 3.5)*(\x - 3.5)});
+
+% Corte ao longo de θ_G: côncava ↑ (mínimo no ponto de sela)
+\draw[wp-accent, very thick, densely dashed] plot[domain=0.5:6.5, samples=80, smooth] ({\x}, {3.0 + 0.32*(\x - 3.5)*(\x - 3.5)});
+
+% Ponto de sela
+\fill[wp-primary] (3.5, 3.0) circle (0.12);
+\node[above right=2pt, font=\large, text=wp-text] at (3.5, 3.0) {sela};
+
+% Marca no eixo
+\draw[wp-text] (3.5, -0.08) -- (3.5, 0.08);
+\node[font=\tiny, text=wp-text, below] at (3.5, -0.1) {$\theta^*$};
+
+% Setas de otimização
+\draw[->, wp-primary!60, thick] (1.8, {3.0 - 0.32*2.89}) -- (3.1, {3.0 - 0.32*0.16});
+\draw[->, wp-accent!60, thick] (1.8, {3.0 + 0.32*2.89}) -- (3.1, {3.0 + 0.32*0.16});
+
+% Legenda
+\node[wp-primary, font=\normalsize, anchor=west, align=left] at (3.8, 5.0) {corte $\theta_D$ $D$ maximiza};
+\node[wp-accent, font=\normalsize, anchor=west, align=left] at (3.8, 1.0) {corte $\theta_G$ $G$ minimiza};
+
+\end{scope}
+
+
+% =========================================================================
+% BASE: EQUAÇÃO MINIMAX (Sincronizada ao novo centro geométrico x=7.8)
+% =========================================================================
+\node[tuftebox, minimum width=15.0cm, minimum height=1.5cm, inner sep=6pt, anchor=north] at (7.8, -1.2) {
+    \Large $\displaystyle \min_G \max_D \; V(D, \mathcal{G})
+    = \mathbb{E}_{x \sim p_{\mathrm{data}}}[\log D(x)]
+    + \mathbb{E}_{z \sim p_z}[\log(1 - D(G(z)))]$ \\[5pt]
+    \normalsize
+    $D$ maximiza $V$ \qquad\qquad $G$ minimiza $V$ \qquad\qquad Equilíbrio: $p_g = p_{\mathrm{data}} \Rightarrow D(\mathbf{x}) = \tfrac{1}{2}$
+};
+
+\end{tikzpicture}
+}
+\caption{Treinamento de GANs como jogo minimax de soma zero.
+\textbf{Esquerda:} superfície de sela $V(\theta_D, \theta_G)$ com o equilíbrio
+de Nash. As setas mostram a convergência --- $D$ ao longo da crista
+(maximização) e $G$ ao longo do vale (minimização).
+\textbf{Direita:} cortes unidimensionais exibindo máximo local para $D$ e
+mínimo local para $G$ no ponto de sela.}
+\label{fig:gan-minimax}
+\end{figure*}

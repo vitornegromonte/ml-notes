@@ -1,0 +1,38 @@
+\begin{marginfigure}
+\centering
+\begin{tikzpicture}[
+    scale=1.5, thick, >=stealth,
+    % Estilos para os neurónios/camadas
+    layer/.style={draw, circle, minimum size=0.55cm, font=\small\bfseries},
+    in_node/.style={layer, wp-accent},
+    hid_node/.style={layer, wp-primary},
+    out_node/.style={layer, wp-dark}
+]
+    % --- INSTANTE t ---
+    % Camada de Entrada
+    \node[in_node] (I1) at (0, 1.2) {$x_1$};
+    \node[in_node] (I2) at (0, 0.4) {$x_2$};
+    
+    % Camada Oculta
+    \node[hid_node] (H1) at (1.2, 1.6) {$h_1$};
+    \node[hid_node] (H2) at (1.2, 0.8) {$h_2$};
+    \node[hid_node] (H3) at (1.2, 0.0) {$h_3$};
+    
+    % Camada de Saída
+    \node[out_node] (O1) at (2.4, 0.8) {$\hat{y}$};
+    
+    % Conexões (Feedforward total)
+    \foreach \i in {I1,I2}
+        \foreach \h in {H1,H2,H3}
+            \draw[->, black!30, thin] (\i) -- (\h);
+            
+    \foreach \h in {H1,H2,H3}
+        \draw[->, black!30, thin] (\h) -- (O1);
+
+    % Rótulos explicativos textuais bem posicionados
+    \node[anchor=north, font=\tiny\bfseries, wp-text] at (1.2, -0.5) {\footnotesize{Time step $t$ (Isolated)}};
+
+\end{tikzpicture}
+\caption{Feedforward networks treat each time step independently; they cannot share weights across time or maintain a dynamic state.}
+\label{fig:feedforward_no_temporal}
+\end{marginfigure}

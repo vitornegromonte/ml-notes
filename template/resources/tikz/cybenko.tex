@@ -1,0 +1,16 @@
+\begin{algorithm}[h]
+\centering
+\caption{Cybenko's Theorem}
+\begin{center}
+    Let $\sigma$ be any continuous discriminatory function. \\
+    Then finite sums of the form \\
+    \begin{equation*}
+        G(x) = \sum_{j=1}^N \alpha_j \sigma(w_j^T x + b_j), \quad w_j \in \mathbb{R}^n, \alpha_j, b_j \in \mathbb{R}
+    \end{equation*} \\
+    are dense in $C(I_n)$. \\
+    In other words, given any $\epsilon > 0$ and $f \in C(I_n)$, there exists $G(x)$ such that \\
+    \begin{equation*}
+        |G(x) - f(x)| < \epsilon, \quad \forall x \in I_n
+    \end{equation*}
+\end{center}
+\end{algorithm}

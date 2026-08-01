@@ -1,0 +1,124 @@
+\documentclass{tufte-handout}
+\usepackage[theorems]{tufte-notes}
+
+\title{Machine Learning Notes \\ Example Document}
+\author{Your Name \\ \href{mailto:your@email.com}{your@email.com}}
+\date{\today}
+
+\begin{document}
+
+\coverpage
+
+\maketitle
+\begin{abstract}
+    This document demonstrates how to use the \texttt{tufte-notes} style package.
+    It shows the color theme, margin notes, TikZ figures, theorems, and bibliography.
+\end{abstract}
+
+\newpage
+\hypersetup{linkcolor=wp-text}
+\tableofcontents
+\hypersetup{linkcolor=wp-primary}
+\newpage
+
+\section{Introduction}
+
+This is a sample section. The \texttt{tufte-notes} package provides the warm-paper
+color scheme and all common packages for ML notes.
+
+\subsection{Margin Notes and Figures}
+
+Use \texttt{\textbackslash sidenote} for margin notes like this one.\sidenote{This is a sidenote in the margin.}
+
+\begin{marginfigure}
+\centering
+\begin{tikzpicture}[scale=0.9]
+    \draw[->, thick] (-0.5,0) -- (4,0) node[right]{$x_1$};
+    \draw[->, thick] (0,-0.5) -- (0,4) node[above]{$x_2$};
+    \draw[wp-primary, thick] (0.5,3.5) -- (3.5,0.5) node[midway, left]{$\mathbf{w}\cdot\mathbf{x}=0$};
+    \draw[->, wp-primary, very thick] (2,2) -- (3,3) node[above right]{$\mathbf{w}$};
+    \filldraw[wp-primary] (1,3) circle (2pt);
+    \filldraw[wp-primary] (2,2.5) circle (2pt);
+    \filldraw[wp-primary] (3,2) circle (2pt);
+    \filldraw[wp-accent] (1,1) circle (2pt);
+    \filldraw[wp-accent] (2,0.5) circle (2pt);
+    \filldraw[wp-accent] (3,0) circle (2pt);
+    \node[wp-primary] at (3.7,3) {Class $+1$};
+    \node[wp-accent] at (3.7,1) {Class $-1$};
+\end{tikzpicture}
+\caption{A perceptron decision boundary in the margin.}
+\label{fig:margin}
+\end{marginfigure}
+
+\subsection{Equations and Algorithms}
+
+The gradient descent update rule is:
+
+\begin{equation}
+    w_i \leftarrow w_i - \eta \frac{\partial E}{\partial w_i}
+    \label{eq:gd}
+\end{equation}
+
+\begin{algorithm}[h]
+\caption{Stochastic Gradient Descent}
+\textbf{Input:} Training set $D$, learning rate $\eta$ \\
+\textbf{Output:} Trained weights $\mathbf{w}$
+\begin{enumerate}
+    \item Initialize $\mathbf{w}$ randomly
+    \item \textbf{Repeat} until convergence:
+    \item \quad Shuffle $D$
+    \item \quad \textbf{For} each example $(\mathbf{x}_i, t_i) \in D$:
+    \item \qquad $o_i \leftarrow \mathbf{w} \cdot \mathbf{x}_i$
+    \item \qquad $w_j \leftarrow w_j + \eta (t_i - o_i) x_{ij}$ for each $j$
+\end{enumerate}
+\end{algorithm}
+
+\subsection{Including TikZ Resources}\label{sec:resources}
+
+You can include standalone TikZ figures from \texttt{resources/tikz/}:
+
+\input{resources/tikz/perceptron}
+
+\subsection{Theorems}\label{sec:theorems}
+
+When the \texttt{theorems} option is passed to \texttt{tufte-notes}, theorem
+environments are available:
+
+\begin{defn}[Perceptron]
+A perceptron is a binary classifier that computes
+$o(\mathbf{x}) = f(\mathbf{w} \cdot \mathbf{x} + b)$ where $f$ is a step function.
+\end{defn}
+
+\begin{thm}[Universal Approximation]
+A feedforward network with a single hidden layer containing a finite number of
+neurons can approximate any continuous function on a compact subset of $\mathbb{R}^n$.
+\end{thm}
+
+\subsection{Bibliography}
+
+You can cite references using Bib\TeX\ \cite{goodfellow2016}.
+The bibliography file lives in \texttt{references/template.bib}.
+
+% ----- Appendix -----
+\newpage
+\hypersetup{linkcolor=wp-text}
+\appendix
+\section{Appendix: Usage Notes}
+
+\paragraph{Customization}
+You can override any color by redefining it after loading the package:
+\begin{verbatim}
+\usepackage{tufte-notes}
+\colorlet{wp-primary}{RoyalBlue}
+\end{verbatim}
+
+\paragraph{Output directory}
+The Makefile compiles PDFs into \texttt{output/}. To compile manually:
+\begin{verbatim}
+latexmk -pdf -output-directory=output sections/01-example.tex
+\end{verbatim}
+
+\bibliographystyle{plainnat}
+\bibliography{references/template}
+
+\end{document}

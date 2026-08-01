@@ -1,0 +1,84 @@
+% GAN Mode Collapse Diagram — Tufte & Official Warm Style
+% Uso: \input{resources/gan/gan-mode-collapse.tex}
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=latex,
+    axis/.style={->, thick, draw=wp-muted},
+    % Usando suas cores oficiais com opacidade calibrada para o fundo wp-bg
+    realcolor/.style={draw=wp-accent, thick, fill=wp-accent!20},
+    gencolor/.style={draw=wp-primary, thick, fill=wp-primary!20},
+    tuftebox/.style={draw=wp-light, fill=wp-code, rounded corners=2pt, align=center, font=\small}
+]
+
+% =========================================================================
+% PARTE SUPERIOR: DISTRIBUIÇÃO REAL (MULTIMODAL EXPANDIDA)
+% =========================================================================
+
+% Eixo Real Expandido para 11.0
+\draw[axis] (0,0) -- (11,0) node[right, font=\normalsize, text=wp-text] {$x$};
+\node[anchor=west, wp-accent, font=\bfseries\normalsize] at (0,2.5) {Distribuição Real $p_{\text{data}}(x)$};
+
+% Modos espaçados horizontalmente (com preenchimento wp-accent)
+\foreach \x/\num in {1.2/1, 3.2/2, 5.2/3, 7.2/4, 9.2/5} {
+    \draw[realcolor] (\x-0.5,0) .. controls (\x-0.1,0) and (\x-0.1,1.8) .. (\x,1.8) 
+                          .. controls (\x+0.1,1.8) and (\x+0.1,0) .. (\x+0.5,0);
+    \node[above, font=\small, text=wp-muted] at (\x, 1.8) {Modo \num};
+}
+
+% Bloco Desejado Minimalista empurrado para a direita (x = 14.5, y = 0.9)
+\node[tuftebox, minimum width=3.8cm, minimum height=2.4cm] (desejado) at (14.5, 0.9) {
+    \textbf{\color{wp-accent}Comportamento Desejado}\\
+    \small Gerador aprende todos os modos\\[6pt]
+    \begin{tikzpicture}[scale=0.35]
+        \foreach \x in {1,...,5} \draw[fill=wp-accent!60, draw=wp-accent] (\x,0) circle (0.25);
+    \end{tikzpicture}\\
+    \footnotesize\color{wp-muted}Amostras diversas (0, 1, 2, 3, 4...)
+};
+
+\draw[->, dashed, draw=wp-muted] (10.5,0.7) -- (desejado.west);
+
+
+% =========================================================================
+% TEXTO EXPLICATIVO INTERMEDIÁRIO (Nota editorial Tufte, sem caixa)
+% =========================================================================
+\node[font=\itshape\small, text=wp-text, text width=9.0cm] at (4.2, -0.7) {
+    O gerador $G$ explora uma região limitada do espaço que consegue enganar o discriminador $D$ com mais facilidade.
+};
+
+
+% =========================================================================
+% PARTE INFERIOR: COLAPSO DE MODO (Alinhamento Vertical Corrigido)
+% =========================================================================
+
+% Eixo Gerado posicionado em y = -4.5
+\draw[axis] (0,-4.5) -- (11,-4.5) node[right, font=\small, text=wp-text] {$x$};
+
+% Título posicionado com segurança em y = -2.0 (acima do pico)
+\node[anchor=west, wp-primary, font=\bfseries\small] at (0,-2.0) {Distribuição Gerada $p_g(x)$ $\rightarrow$ Colapso};
+
+% Modo único alinhado perfeitamente com o Modo 3 (x = 5.2). Preenchimento wp-primary
+\draw[gencolor, line width=1pt] (4.4,-4.5) .. controls (4.9,-4.5) and (4.8,-2.7) .. (5.2,-2.7)
+                     .. controls (5.6,-2.7) and (5.5,-4.5) .. (6.0,-4.5);
+\node[above, font=\small, text=wp-primary] at (5.2, -2.7) {Modo 3 Explodido};
+\node[below, font=\small, text=wp-text, align=center] at (5.2, -4.6) {Todas as amostras\\são quase idênticas};
+
+% Bloco Colapso rebaixado para y = -4.0 (centro do eixo inferior)
+\node[tuftebox, minimum width=3.8cm, minimum height=2.4cm] (colapso) at (14.5, -4.0) {
+    \textbf{\color{wp-primary}O que ocorre de fato:}\\
+    \small \textit{Colapso de Modo}\\[6pt]
+    \begin{tikzpicture}[scale=0.35]
+        \foreach \x in {1,...,5} \draw[fill=wp-primary!80, draw=wp-primary] (3,0) circle (0.25);
+    \end{tikzpicture}\\
+    \footnotesize\color{wp-muted}Amostras repetitivas (3, 3, 3, 3, 3...)
+};
+
+% Seta corrigida saindo livremente de x = 6.2 sem colidir com nenhum texto
+\draw[->, draw=wp-muted] (6.2,-4.0) -- (colapso.west);
+
+\end{tikzpicture}
+}
+\caption{Colapso de Modo em GANs. Enquanto a distribuição real $p_{\text{data}}$ apresenta múltiplos modos (alta diversidade), o gerador colapsa para uma região restrita, limitando-se a reproduzir variações de um único modo.}
+\label{fig:gan-mode-collapse}
+\end{figure}

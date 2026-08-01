@@ -373,44 +373,6 @@ Feedforward (multilayer perceptron) networks assume fixed-length inputs and outp
 \end{enumerate}
 
 Moreover, feedforward networks have no built-in mechanism to handle the sequential order or to maintain a state that evolves over time. They cannot capture the inductive bias that the same transformation applies at each time step (weight sharing) - a property that recurrent networks exploit.
-\begin{marginfigure}
-\centering
-\begin{tikzpicture}[
-    scale=1.5, thick, >=stealth,
-    % Estilos para os neurónios/camadas
-    layer/.style={draw, circle, minimum size=0.55cm, font=\small\bfseries},
-    in_node/.style={layer, wp-accent},
-    hid_node/.style={layer, wp-primary},
-    out_node/.style={layer, wp-dark}
-]
-    % --- INSTANTE t ---
-    % Camada de Entrada
-    \node[in_node] (I1) at (0, 1.2) {$x_1$};
-    \node[in_node] (I2) at (0, 0.4) {$x_2$};
-    
-    % Camada Oculta
-    \node[hid_node] (H1) at (1.2, 1.6) {$h_1$};
-    \node[hid_node] (H2) at (1.2, 0.8) {$h_2$};
-    \node[hid_node] (H3) at (1.2, 0.0) {$h_3$};
-    
-    % Camada de Saída
-    \node[out_node] (O1) at (2.4, 0.8) {$\hat{y}$};
-    
-    % Conexões (Feedforward total)
-    \foreach \i in {I1,I2}
-        \foreach \h in {H1,H2,H3}
-            \draw[->, black!30, thin] (\i) -- (\h);
-            
-    \foreach \h in {H1,H2,H3}
-        \draw[->, black!30, thin] (\h) -- (O1);
-
-    % Rótulos explicativos textuais bem posicionados
-    \node[anchor=north, font=\tiny\bfseries, wp-text] at (1.2, -0.5) {\footnotesize{Time step $t$ (Isolated)}};
-
-\end{tikzpicture}
-\caption{Feedforward networks treat each time step independently; they cannot share weights across time or maintain a dynamic state.}
-\label{fig:feedforward_no_temporal}
-\end{marginfigure}
 
 \subsection{Recurrence as a Natural Solution}
 
@@ -922,83 +884,6 @@ The GRU (Cho et al., 2014) simplifies the LSTM by combining the forget and input
     \mathbf{h}_t &= (1 - \mathbf{z}_t) \odot \mathbf{h}_{t-1} + \mathbf{z}_t \odot \tilde{\mathbf{h}}_t.
 \end{align}
 GRUs have fewer parameters than LSTMs and often perform similarly.
-
-\begin{figure}[t!]
-\centering
-% Certifique-se de incluir no preâmbulo:
-% \usetikzlibrary{positioning, calc, arrows.meta}
-\begin{tikzpicture}[
-    scale=1.0, 
-    thick, >=stealth,
-    % Caixa delimitadora externa da célula
-    cell_box/.style={draw, rectangle, rounded corners=10pt, black!80, loosely dashed, line width=1.2pt, minimum width=7.2cm, minimum height=4.2cm},
-    % Blocos de ativação
-    layer/.style={draw, rectangle, font=\scriptsize\bfseries, minimum width=1.0cm, minimum height=0.5cm, fill=wp-accent, text=black},
-    % Operadores matemáticos circulares
-    op/.style={draw, circle, minimum size=0.5cm, inner sep=0pt, font=\small, fill=wp-primary!50, draw=black},
-    % Estilo de texto interno para os rótulos posicionados sobre as linhas
-    gate_lbl/.style={font=\small\bfseries, text=black, align=center, fill=white, inner sep=2pt},
-    io/.style={font=\small, text=black}
-]
-
-    % 1. Renderiza a caixa externa principal (Referência espacial)
-    \node[cell_box] (B) at (4.0, 1.8) {};
-
-    % 2. Nós de entrada externos e rótulos (O fluxo agora se conecta diretamente a eles)
-    \node[io, left=0.8cm of B.155, align=left] (c_prev_lbl) {Memory cell\\internal state\\$\mathbf{C}_{t-1}$};
-    \node[io, left=0.8cm of B.190, align=left] (h_prev_lbl) {Hidden state\\$\mathbf{H}_{t-1}$};
-    \node[io, below=0.6cm of B.225] (x_lbl) {Input $\mathbf{X}_t$};
-    
-    % Saída à direita
-    \node[io, right=0.8cm of B.25] (c_next_lbl) {$\mathbf{C}_t$};
-
-    % 3. Alinhamento dos Operadores na Esteira Superior
-    \node[op] (f_mult) at ($(B.155)!0.22!(B.25)$) {$\odot$};
-    \node[op] (i_add)  at ($(B.155)!0.65!(B.25)$) {$+$};
-
-    % 4. Posicionamento Estratégico dos Blocos de Ativação
-    \node[layer] (f_gate) at ($(f_mult)-(0,1.8)$) {$\sigma$};
-    \node[op] (input_mult) at ($(i_add)-(0,0.9)$) {$\odot$};
-    \node[layer] (c_gate) at ($(input_mult)-(0,0.9)$) {$\tanh$};
-    \node[layer] (i_gate) at ($(c_gate)-(1.6,0)$) {$\sigma$};
-    \node[layer] (o_gate) at ($(B.155)!0.85!(B.25) - (0,1.8)$) {$\sigma$};
-
-    % ================= CONEXÕES COM RÓTULOS NO MEIO DAS RETAS =================
-
-    % Fluxo Principal Superior: Cell State (Setas saem e entram DIRETAMENTE nas letras)
-    \draw[->] (c_prev_lbl.east) -- (f_mult);
-    \draw[->] (f_mult) -- (i_add);
-    \draw[->] (i_add) -- (c_next_lbl.west);
-
-    % Linha de Barramento Inferior (Hidden State)
-    \coordinate (h_bus) at ($(B.190)+(0.3,0)$);
-    \draw[-] (h_prev_lbl.east) -- (h_bus);
-    \draw[-] (x_lbl.north) |- (h_bus);
-
-    % Distribuição paralela para a base de cada camada
-    \foreach \g in {f_gate, i_gate, c_gate, o_gate} {
-        \draw[->] (h_bus) -| (\g.south);
-    }
-
-    % Forget gate à esquerda da sua linha vertical
-    \draw[->] (f_gate) -- (f_mult) node[midway, left=2pt, font=\tiny\bfseries, align=center] {Forget\\gate\\$\mathbf{F}_t$};
-    
-    % Input node à direita da sua linha vertical
-    \draw[->] (c_gate) -- (input_mult) node[midway, right=2pt, font=\tiny\bfseries, align=center] {Input\\node\\$\tilde{\mathbf{C}}_t$};
-    
-    % Input gate no meio da linha ortogonal que dobra em L
-    \draw[->] (i_gate.north) |- (input_mult.west) node[midway, above, font=\tiny\bfseries, yshift=-1pt] {Input gate $\mathbf{I}_t$};
-    
-    % Output gate no meio da linha vertical que sobe livremente
-    \draw[->] (o_gate.north) -- ($(o_gate.north)+(0,1.0)$) node[midway, fill=white, inner sep=1pt, font=\tiny\bfseries] {Output gate $\mathbf{O}_t$};
-
-\end{tikzpicture}
-\caption{Corrected schematic of an LSTM cell. The memory flow arrows connect directly to the text variables, and all gate labels are mathematically centered along their internal routing lines.}
-\label{fig:lstm_perfect_routing}
-\end{figure}
-
-
-
 
 \subsection{Connection to Maximum Likelihood Estimation}
 

@@ -1,0 +1,150 @@
+% Style Transfer — Pipeline completo (Grelha e Alinhamento Otimizados)
+% Uso: \input{resources/style-transfer/style-transfer-pipeline.tex}
+\begin{figure*}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=latex,
+    box/.style={draw=wp-text, fill=wp-light, rounded corners=2pt, minimum width=2.4cm, minimum height=0.8cm, align=center, font=\small},
+    img/.style={draw=wp-text, fill=wp-code, rounded corners=2pt, minimum width=1.6cm, minimum height=1.2cm, align=center, font=\small},
+    loss/.style={draw=wp-primary, fill=wp-primary!10, rounded corners=2pt, minimum width=2.2cm, minimum height=1.0cm, align=center, font=\small},
+    cnn/.style={draw=wp-primary, dashed, line width=0.8pt, fill=none, rounded corners=4pt, minimum width=2.8cm, minimum height=8cm, align=center, font=\small},
+    grambox/.style={draw=wp-accent, dashed, line width=0.8pt, fill=none, rounded corners=4pt, minimum width=2.8cm, minimum height=8cm, align=center, font=\small},
+    lossbox/.style={draw=wp-text, dashed, line width=0.8pt, fill=none, rounded corners=4pt, minimum width=3.4cm, minimum height=8cm, align=center, font=\small},
+    conn/.style={->, draw=wp-primary, thick},
+    label/.style={font=\footnotesize, text=wp-primary},
+    tuftebox/.style={draw=wp-light, fill=wp-code, rounded corners=2pt, align=center}
+]
+
+% =========================================================================
+% ENTRADAS: TENSORES DE IMAGEM SIMPLIFICADOS
+% =========================================================================
+\node[img] (content) at (0, 3.0)  {Conteúdo\\$\mathcal{C}$};
+\node[img] (style)   at (0, 0.0)  {Estilo\\$\mathcal{S}$};
+\node[img] (gen)     at (0, -3.0) {Gerada\\$\mathcal{G}$};
+
+\node[label, above=4.2pt] at (content.north) {Entradas};
+
+% =========================================================================
+% CAMADAS DA CNN (Fase 1 - Container unificado)
+% =========================================================================
+\node[cnn] (cnn_box) at (3.2, 0) {};
+
+\node[box] (conv1) at (3.2, 3.0)  {conv$_1$};
+\node[box] (conv2) at (3.2, 1.5)  {conv$_2$};
+\node[box] (conv3) at (3.2, 0.0)  {conv$_3$};
+\node[box] (conv4) at (3.2, -1.5) {conv$_4$};
+\node[box] (conv5) at (3.2, -3.0) {conv$_5$};
+
+% Fluxo interno da CNN
+\draw[->, draw=wp-text!50, thick] (conv1) -- (conv2);
+\draw[->, draw=wp-text!50, thick] (conv2) -- (conv3);
+\draw[->, draw=wp-text!50, thick] (conv3) -- (conv4);
+\draw[->, draw=wp-text!50, thick] (conv4) -- (conv5);
+
+% Conexões das entradas para a CNN
+\draw[->, draw=wp-text, thick] (content.east) -- (conv1.west);
+\draw[->, draw=wp-text, thick] (style.east)   -- (conv3.west);
+\draw[->, draw=wp-text, thick] (gen.east)     -- (conv5.west);
+
+
+% =========================================================================
+% MAPAS DE CARACTERÍSTICAS E MATRIZES DE GRAM (Fase 2)
+% =========================================================================
+\node[grambox] (gram_container) at (6.5, 0) {};
+
+\node[box] (fm_c)  at (6.5,  3.0) {$F^l(\mathcal{C})$};
+\node[box] (gm_s1) at (6.5,  1.5) {$G^{l_1}(\mathcal{S})$};
+\node[box] (gm_s2) at (6.5,  0.0) {$G^{l_2}(\mathcal{S})$};
+\node[box] (gm_s3) at (6.5, -1.5) {$G^{l_3}(\mathcal{S})$};
+\node[box] (fm_g)  at (6.5, -3.0) {$F^l(\mathcal{G})$};
+
+\draw[->, draw=wp-text!70, thick] (conv1.east) -- (fm_c.west);
+\draw[->, draw=wp-text!70, thick] (conv2.east) -- (gm_s1.west);
+\draw[->, draw=wp-text!70, thick] (conv3.east) -- (gm_s2.west);
+\draw[->, draw=wp-text!70, thick] (conv4.east) -- (gm_s3.west);
+\draw[->, draw=wp-text!70, thick] (conv5.east) -- (fm_g.west);
+
+
+% =========================================================================
+% COMPUTAÇÃO DE PERDAS (Fase 3)
+% =========================================================================
+\node[lossbox] (loss_container) at (10.2, 0) {};
+
+\node[loss, text width=3.0cm] (l_c) at (10.2, 3.0) {$\mathcal{L}_{\mathrm{cont}}$\\$=\frac{1}{2}\|F^l(C)-F^l(G)\|^2$};
+\node[loss] (l_s1) at (10.2,  1.4) {$w_1\mathcal{L}_{\mathrm{est}}$};
+\node[loss] (l_s2) at (10.2,  0.0) {$w_2\mathcal{L}_{\mathrm{est}}$};
+\node[loss] (l_s3) at (10.2, -1.4) {$w_3\mathcal{L}_{\mathrm{est}}$};
+
+\draw[conn] (fm_c.east)  -- (l_c.west);
+\draw[conn] (gm_s1.east) -- (l_s1.west);
+\draw[conn] (gm_s2.east) -- (l_s2.west);
+\draw[conn] (gm_s3.east) -- (l_s3.west);
+
+% Feedback do G para as perdas
+\draw[->, draw=wp-accent, thick, dotted, rounded corners=4pt] (fm_g.east) -- ++(0.4,0) |- (l_c.190);
+\draw[->, draw=wp-accent, thick, dotted, rounded corners=4pt] (fm_g.east) -- ++(0.4,0) |- (l_s3.190);
+
+
+% =========================================================================
+% FUNÇÃO DE PERDA TOTAL & OTIMIZADOR
+% =========================================================================
+\node[tuftebox, minimum width=4.8cm, minimum height=1.6cm, text width=4.6cm, font=\small] (l_total) at (14.9, 0.75) {
+    \textbf{\color{wp-primary}Função de Perda Total}\\[2pt] 
+    $\mathcal{L}_{\mathrm{total}} = \alpha\mathcal{L}_{\mathrm{cont}} + \beta\sum_l w_l\mathcal{L}_{\mathrm{est}}^l$
+};
+
+\node[draw=wp-accent, fill=wp-code, rounded corners=2pt, minimum width=4.8cm, minimum height=1.1cm, text width=4.2cm, font=\small, align=center] (opt) at (14.9, -1.2) {
+    \textbf{\color{wp-accent}Otimizador}\\[2pt] 
+    $\mathbf{G} \leftarrow \mathbf{G} - \eta\nabla_{\mathbf{G}}\mathcal{L}_{\mathrm{total}}$
+};
+
+% Conexões para a direita
+\draw[->, draw=wp-primary, thick, rounded corners=4pt] (l_c.east) -| (l_total.120);
+\draw[->, draw=wp-primary, thick] (l_s1.east) -- (l_total.190);
+\draw[->, draw=wp-primary, thick] (l_s2.east) |- (opt.175);
+\draw[->, draw=wp-primary, thick] (l_s3.east) -- (opt.190);
+
+\draw[->, draw=wp-text, very thick] (l_total.south) -- (opt.north);
+
+
+% =========================================================================
+% FASES DE PROCESSAMENTO (Indicadores Numéricos)
+% =========================================================================
+\node[draw=wp-primary, fill=wp-bg, circle, inner sep=2.5pt, font=\scriptsize\bfseries, text=wp-primary] at (1.7, 3.57) {1};
+\node[draw=wp-accent, fill=wp-bg, circle, inner sep=2.5pt, font=\scriptsize\bfseries, text=wp-accent] at (5.1, 3.57) {2};
+\node[draw=wp-text, fill=wp-bg, circle, inner sep=2.5pt, font=\scriptsize\bfseries, text=wp-text] at (8.6, 3.57) {3};
+
+
+% =========================================================================
+% FEEDBACK LOOP (Passando horizontalmente por baixo)
+% =========================================================================
+\draw[->, draw=wp-accent, thick, rounded corners=6pt] 
+    (opt.south) -- (14.9, -4.5) -- (0, -4.5) -- (gen.south);
+
+\node[label, font=\itshape\footnotesize, anchor=north] at (7.4, -4.5) 
+    {atualizar imagem gerada $\mathcal{G}$ via retropropagação};
+
+
+% =========================================================================
+% LEGENDA DAS FASES E NOTAÇÕES REPOSICIONADA
+% =========================================================================
+\node[tuftebox, minimum width=10.0cm, minimum height=1.0cm, inner sep=5pt] (legenda) at (7.4, -5.9) {
+    \scriptsize 
+    \textbf{Fases:} \ 
+    \textbf{\color{wp-primary}1} Extração de características \quad 
+    \textbf{\color{wp-accent}2} Geração de representações \quad 
+    \textbf{\color{wp-text}3} Cálculo de perdas \\
+    \scriptsize
+    \textbf{Notações:} \ 
+    $\mathcal{C}, \mathcal{S}, \mathcal{G}$ Imagens (Conteúdo, Estilo, Gerada)\\
+    \scriptsize
+    $F^l(\cdot)$ Mapas de características \qquad 
+    $G^l(\cdot)$ Matriz de Gram
+};
+
+\end{tikzpicture}
+}
+\caption{Pipeline completo de Style Transfer. Três imagens ($\mathcal{C}$, $\mathcal{S}$, $\mathcal{G}$) passam por uma CNN pré-treinada. Mapas de características de $\mathcal{C}$ e $\mathcal{G}$ em uma camada profunda definem a perda de conteúdo. Matrizes de Gram de $\mathcal{S}$ e $\mathcal{G}$ em múltiplos níveis definem a perda de estilo. A perda total é minimizada via gradiente descendente, atualizando $\mathcal{G}$.}
+\label{fig:style-transfer-pipeline}
+\end{figure*}

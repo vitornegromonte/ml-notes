@@ -1,0 +1,65 @@
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        >=latex,
+        block/.style={
+            rectangle,
+            draw,
+            minimum width=1cm,
+            minimum height=1cm
+        },
+        sum/.style={
+            circle,
+            draw,
+            minimum size=0.7cm
+        },
+        integral/.style={
+            rectangle,
+            draw,
+            minimum width=1cm,
+            minimum height=1cm
+        }
+    ]
+    % Input and junction point
+    \node (input) at (-6,0) {$u$};
+    \node[circle,inner sep=1pt,fill=black] (junction1) at (-5,0) {};
+    
+    % Main forward path
+    \node[block] (B) at (-3.5,0) {$B$};
+    \node[sum] (sum1) at (-2,0) {$+$};
+    \node[integral] (integral) at (-0.5,0) {$\int$};
+    \node[block] (C) at (2,0) {$C$};
+    \node[sum] (sum2) at (3.5,0) {$+$};
+    \node (output) at (5,0) {$y$};
+    
+    % Feedback path with A
+    \node[block] (A) at (0,-2) {$A$};
+    
+    % Feed-forward path with D
+    \node[block] (D) at (0,2) {$D$};
+    
+    % State labels
+    \node at (-1.2,0.4) {$\dot{x}$};
+    \node at (0.5,0.4) {$x$};
+    
+    % Connections
+    \draw[->] (input) -- (junction1);
+    \draw[->] (junction1) -- (B);
+    \draw[->] (B) -- (sum1);
+    \draw[->] (sum1) -- (integral);
+    \draw[->] (integral) -- (C);
+    \draw[->] (C) -- (sum2);
+    \draw[->] (sum2) -- (output);
+    
+    % Feedback connection
+    \draw[->] (integral) -- (integral |- A.north) -- (A);
+    \draw[->] (A) -- (A -| sum1.south) -- (sum1.south);
+    
+    % Feed-forward connection
+    \draw[->] (junction1) |- (D);
+    \draw[->] (D) -| (sum2);
+    
+    \end{tikzpicture}
+    \caption{State Space Model Diagram}
+    \label{fig:ssm}
+\end{figure}

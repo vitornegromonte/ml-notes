@@ -1,0 +1,35 @@
+
+\begin{algorithm}
+    \caption{Backpropagation Algorithm}
+    \begin{algorithmic}
+        \textbf{Input:} Training examples $\langle \Vec{x}, \Vec{t} \rangle$, where $\Vec{x}$ is the input vector and $\Vec{t}$ is the target vector. \\
+        \textbf{Output:} Trained weights $w_{ij}$ minimizing the error function. \\
+        \textbf{Initialize:} Randomly set all weights $w_{ij}$ to small values. Set the learning rate $\eta > 0$. \\
+        
+        \textbf{Forward Pass} \\
+        1. Present the input vector $\Vec{x}$ to the network. \\
+        2. For each neuron $j$ in hidden and output layers, compute: \\
+        \begin{equation*}
+            o_j = f\left(\sum_i w_{ij} x_{ij}\right)
+        \end{equation*}
+        where $f(\cdot)$ is a differentiable activation function (e.g., sigmoid, ReLU). \\
+        
+        \textbf{Backward Pass} \\
+        1. Compute the error signal $\delta_k$ for each output unit $k$: \\
+        \begin{equation*}
+            \delta_k = (t_k - o_k) f'(o_k)
+        \end{equation*}
+        2. Compute the error signal $\delta_j$ for each hidden unit $j$: \\
+        \begin{equation*}
+            \delta_j = f'(o_j) \sum_k w_{jk} \delta_k
+        \end{equation*}
+        3. Update the weights $w_{ij}$ for each connection: \\
+        \begin{equation*}
+            w_{ij} \leftarrow w_{ij} + \eta \cdot \delta_j \cdot o_i
+        \end{equation*}
+
+        Repeat
+        Perform the \textit{Forward Pass} and \textit{Backward Pass} for all training examples. \\
+        Until Convergence is achieved (e.g., total error $E(\Vec{w})$ becomes sufficiently small or stops decreasing).
+    \end{algorithmic}
+\end{algorithm}

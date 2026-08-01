@@ -1,0 +1,508 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{pgfplots}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amssymb, amsmath, tabularx, booktabs}
+\usepackage{amsfonts}
+\usepackage{makecell}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\usetikzlibrary{shadings}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc, arrows.meta}
+\usetikzlibrary{shapes.misc}
+
+\usepgfplotslibrary{colormaps, patchplots}
+
+\pgfplotsset{compat = newest}
+
+\usetheme{Tufte}
+
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator{\sg}{sg}
+\DeclareMathOperator{\symlog}{symlog}
+
+\title{O que danado é um \textit{World Model}?}
+\subtitle{Uma Introdução às Representações Internas em Inteligência Artificial}
+\author{Vitor N. Cabral de Oliveira}
+\institute{\href{mailto:vnco@cin.ufpe.br}{vnco@cin.ufpe.br}}
+\date{\today}
+
+\tikzset{
+  box/.style={draw=wp-primary!50, fill=wp-bg, minimum width=1.2cm, minimum height=0.6cm, text=wp-text, align=center, font=\small},
+  input/.style={draw=wp-muted!50, fill=wp-bg, minimum width=0.8cm, minimum height=0.4cm, text=wp-text, align=center, font=\small},
+  loss/.style={draw=wp-accent!50, fill=wp-bg, minimum width=2.0cm, minimum height=0.6cm, text=wp-text, align=center, font=\small},
+  emph/.style={draw=wp-primary!50, fill=wp-bg, minimum width=1.2cm, minimum height=0.6cm, text=wp-text, align=center, font=\small},
+  layer/.style={draw=wp-primary!50, fill=wp-bg, minimum width=1.8cm, minimum height=0.6cm, text=wp-text, align=center},
+  error/.style={draw=wp-accent!60, fill=wp-bg, minimum size=0.55cm, text=wp-text, font=\tiny},
+  comp/.style={draw=wp-primary!50, fill=wp-bg, minimum width=2.0cm, minimum height=0.6cm, text=wp-text, align=center},
+  era/.style={draw=wp-primary!50, fill=wp-bg, minimum width=2.4cm, minimum height=0.5cm, text=wp-text, align=center, font=\small}
+}
+
+\begin{document}
+
+% ===== Title Frame =====
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% ===== Outline =====
+\begin{frame}{Roteiro}
+  \tableofcontents
+\end{frame}
+
+% ============================================================
+\section{Introdução}
+% ============================================================
+
+\begin{frame}{O que é um \textit{World Model}?}
+  \begin{block}{Definição}
+    Um \textbf{world model} é uma representação interna que um agente constrói do seu ambiente, permitindo:
+  \end{block}
+  \vspace{0.3em}
+  \begin{itemize}
+    \item \textbf{Prever} estados futuros do ambiente
+    \item \textbf{Raciocinar} sobre consequências de ações
+    \item \textbf{Planejar} sem tentativa-e-erro no mundo real
+  \end{itemize}
+  \vspace{0.5em}
+  \begin{center}
+    \begin{tikzpicture}[node distance=0.6cm and 1.2cm, auto, >=latex]
+      \node[box, minimum width=2.2cm] (percep) {Percepção};
+      \node[box, minimum width=2.2cm, right=of percep] (mem) {Memória};
+      \node[box, minimum width=2.2cm, right=of mem] (plan) {Planejamento};
+      \draw[->, wp-primary, thick] (percep) -- (mem);
+      \draw[->, wp-primary, thick] (mem) -- (plan);
+      \draw[->, wp-primary, thick, dashed] (plan.south) .. controls +(down:0.5cm) and +(down:0.5cm) .. (percep.south);
+      \node[wp-muted, font=\tiny, below=1.2cm] at (mem.center) {loop percepção--ação};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+% ============================================================
+\section{Fundamentos Cognitivos}
+% ============================================================
+
+\begin{frame}{Modelos Mentais na Psicologia}
+  \textbf{Kenneth Craik (1943)} --- \textit{The Nature of Explanation}
+  \vspace{0.5em}
+  \begin{itemize}
+    \item Organismos constroem \textbf{``modelos em miniatura''} da realidade
+    \item Capacidade de antecipar eventos e testar alternativas mentalmente
+    \item Precursor direto dos \textit{world models} em IA
+  \end{itemize}
+  \vspace{1em}
+  \begin{block}{Correlato Neurológico: Vias Visuals}
+    \begin{tabularx}{\textwidth}{lX}
+      \textbf{Via Ventral} & Reconhecimento de objetos (\textit{``o quê''}) \\
+      \textbf{Via Dorsal}  & Processamento espacial (\textit{``onde/como''}) \\
+    \end{tabularx}
+  \end{block}
+  \vspace{0.3em}
+  \centering\small Arquiteturas modernas de \textit{world models} frequentemente espelham esta separação.
+\end{frame}
+
+\begin{frame}{Princípio da Energia Livre (FEP)}
+  \textbf{Karl Friston} --- Sistemas auto-organizáveis minimizam \textit{energia livre variacional} para resistir à entropia.
+
+  \vspace{0.5em}
+  Um agente mantém um modelo generativo $p(o_t, s_t)$ sobre observações $o_t$ e estados latentes $s_t$:
+
+  \vspace{0.3em}
+  \begin{equation}
+    F = \mathbb{E}_{q(s_t)}\bigl[\log q(s_t) - \log p(o_t, s_t)\bigr]
+      = D_{\mathrm{KL}}\bigl(q(s_t) \parallel p(s_t \mid o_t)\bigr) - \log p(o_t)
+  \end{equation}
+
+  \vspace{0.3em}
+  Percepção $\equiv$ inferência variacional: minimizar $F$ maximiza a evidência do modelo interno.
+\end{frame}
+
+\begin{frame}{Inferência Ativa}
+  Ação e percepção como dois lados da mesma moeda:
+  \begin{itemize}
+    \item \textbf{Percepção}: atualiza crenças internas $q(s_t)$ para ajustar aos dados $o_t$
+    \item \textbf{Ação}: altera o ambiente para forçar dados futuros a se conformarem às expectativas do modelo
+  \end{itemize}
+
+  \vspace{0.5em}
+  Decomposição da Energia Livre Esperada $G(\pi)$:
+  \begin{equation}
+    G(\pi) \approx \sum_\tau
+      \underbrace{-\mathbb{E}_{q(s_\tau \mid \pi)}\bigl[\mathcal{H}\bigl(q(o_\tau \mid s_\tau)\bigr)\bigr]}_{\text{Epistêmico (Redução de Ambiguidade)}}
+      + \underbrace{D_{\mathrm{KL}}\bigl(q(o_\tau \mid \pi) \parallel p(o_\tau)\bigr)}_{\text{Instrumental (Minimização de Risco)}}
+  \end{equation}
+
+  \vspace{0.3em}
+  Unifica estruturalmente o dilema exploração--explotação do RL \textit{model-free}.
+\end{frame}
+
+\begin{frame}{Codificação Preditiva}
+  \textbf{Rao \& Ballard (1999)} --- O córtex cerebral implementa uma arquitetura hierárquica que otimiza energia livre via \textit{predictive coding}.
+
+  \vspace{0.3em}
+  \begin{center}
+    \begin{tikzpicture}[node distance=0.6cm and 0.8cm, auto, >=latex, font=\small]
+      \node[layer] (layer2) {Camada Superior $s_{t+1}$};
+      \node[layer, below=of layer2, yshift=-0.1cm] (layer1) {Camada Inferior $s_t$};
+      \node[error, right=of layer1] (comp) {$\sum$};
+      \node[input, below=of comp] (obs) {$o_t$};
+
+      \draw[->, wp-primary, thick] (layer2) -- node[left, font=\tiny] {$f(s_{t+1})$} (layer1);
+      \draw[->, wp-primary, thick] (layer1.east) -- (comp.west);
+      \draw[->, wp-primary, thick] (obs.north) -- (comp.south);
+      \draw[->, wp-primary, thick] (comp.north) .. controls +(up:0.6cm) and +(right:0.6cm) ..
+        node[right, midway, font=\tiny] {Erro $\varepsilon_t$} (layer2.east);
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3em}
+  \begin{itemize}
+    \item Predições \textit{top-down} suprimem atividade em camadas inferiores
+    \item Apenas erros residuais $\varepsilon_t$ sobem na hierarquia
+    \item Mapeia diretamente para RSSMs e PCNs modernos
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+\section{Dois Paradigmas: Preditivo vs Generativo}
+% ============================================================
+
+\begin{frame}{Paradigma Preditivo}
+  Modela a dinâmida de transição: $p(s_{t+1} \mid s_t, a_t) = f_\theta(s_t, a_t)$
+
+  \vspace{0.3em}
+  \begin{block}{Propósito}
+    \textbf{Previsão}: dado o que aconteceu, o que acontecerá?
+  \end{block}
+
+  \vspace{0.3em}
+  \textbf{Representantes:}
+  \begin{itemize}
+    \item \textbf{Ha \& Schmidhuber (2018)}: VAE + RNN --- arquitetura original \textit{World Models}
+    \item \textbf{LeCun (JEPA)}: predição em espaço latente, não em pixels
+    \item \textbf{Dreamer (Hafner et al.)}: RSSM + \textit{actor-critic} em trajetórias imaginadas
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{JEPA --- \textit{Joint Embedding Predictive Architecture}}
+  \textbf{LeCun (2022)} --- Estrutura de \textit{self-supervised learning} que prevê em espaço latente:
+
+  \vspace{0.3em}
+  \begin{equation}
+    \hat{s}_y = \text{Predictor}(s_x, \theta), \quad
+    \mathcal{L} = \|\hat{s}_y - s_y\|^2
+  \end{equation}
+
+  \begin{itemize}
+    \item \textbf{Prevenção de colapso}: \textit{stop-gradient} no encoder alvo
+    \item \textbf{Abstração}: descarta detalhes imprevisíveis (ruído de pixel), captura estrutura semântica
+    \item \textbf{Jerarquia}: módulos JEPA empilhados operam em diferentes escalas temporais
+  \end{itemize}
+
+  \begin{center}
+    \begin{tikzpicture}[node distance=0.4cm and 0.8cm, auto, >=latex, font=\small]
+      \node[input] (ix) {$x$};
+      \node[box, right=of ix] (enc) {Encoder};
+      \node[input, right=of enc] (sx) {$s_x$};
+      \node[box, right=of sx] (pred) {Predictor};
+      \node[input, right=of pred] (syhat) {$\hat{s}_y$};
+
+      \node[input, below=of ix] (iy) {$y$};
+      \node[box, right=of iy] (enc2) {Encoder};
+      \node[input, right=of enc2] (sg) {$\sg(s_y)$};
+
+      \node[loss, right=of sg] (loss) {$\mathcal{L} = \|\hat{s}_y - s_y\|^2$};
+
+      \draw[->, wp-primary, thick] (ix) -- (enc);
+      \draw[->, wp-primary, thick] (enc) -- (sx);
+      \draw[->, wp-primary, thick] (sx) -- (pred);
+      \draw[->, wp-primary, thick] (pred) -- (syhat);
+      \draw[->, wp-primary, thick] (iy) -- (enc2);
+      \draw[->, wp-primary, thick] (enc2) -- (sg);
+      \draw[->, wp-primary, thick] (syhat.south) -| (loss.north);
+      \draw[->, wp-primary, thick] (sg) -- (loss);
+      \draw[wp-muted, dashed, thick] (enc.south) -- (enc2.north)
+        node[midway, right, wp-muted, font=\tiny] {pesos compartilhados};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Paradigma Generativo}
+  Modela a distribuição conjunta completa:
+  \begin{equation}
+    p(o_1, \dots, o_T, a_1, \dots, a_T) = \prod_{t=1}^T p(o_t, a_t \mid o_{<t}, a_{<t})
+  \end{equation}
+
+  \vspace{0.3em}
+  \textbf{Representantes:}
+  \begin{itemize}
+    \item \textbf{Google Genie}: tokenizador de vídeo + modelo de dinâmica causal; mundo jogável a partir de uma única imagem
+    \item \textbf{GAIA-1 / UniSim}: transformers de vídeo em larga escala que aprendem física intuitiva diretamente de pixels
+  \end{itemize}
+
+  \vspace{0.5em}
+  \begin{block}{Avaliação}
+    Qualidade da amostra, diversidade distribucional, consistência temporal de longo horizonte
+  \end{block}
+\end{frame}
+
+\begin{frame}{Paradigmas em Contraste}
+  \centering
+  \footnotesize
+  \begin{tabular}{lp{4.2cm}p{4.2cm}}
+    \toprule
+    \textbf{Dimensão} & \textbf{Preditivo} & \textbf{Generativo} \\
+    \midrule
+    Objetivo Primário & Minimizar distância latente & Maximizar log-verossimilhança \\
+    Tipo de Saída & Predição de estado abstrato & Amostragem do fluxo observacional \\
+    Sinal de Aprendizagem & Alinhamento de atributos & Reconstrução / \textit{token loss} \\
+    Utilidade & Planejamento \textit{local look-ahead} & Simulação ambiental \\
+    Vulnerabilidade & Colapso representacional & Alto custo amostral \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \pause
+  \begin{alertblock}{}
+    A fronteira é fluida --- Dreamer usa um modelo generativo para \textit{rollouts} preditivos; Genie integra um controlador preditivo em um pipeline generativo.
+  \end{alertblock}
+\end{frame}
+
+% ============================================================
+\section{Fundações Teóricas de Schmidhuber}
+% ============================================================
+
+\begin{frame}{Schmidhuber: Bases Teóricas}
+  \vspace{-0.3em}
+  \begin{block}{Curiosidade Artificial (1991)}
+    Recompensa intrínseca por erros de predição \textbf{aprendíveis}:
+    \begin{equation}
+      \text{curiosity reward} = \|\hat{s}_{t+1} - s_{t+1}\|^2 \quad (\text{apenas se aprendizável})
+    \end{equation}
+    Inspirou módulos de curiosidade intrínseca em RL moderno (ICM, Pathak et al. 2017).
+  \end{block}
+
+  \begin{block}{Teoria Formal da Criatividade (2012)}
+    \begin{itemize}
+      \item ``Beleza'' $\propto$ progresso de compressão/aprendizagem no \textit{world model} do observador
+      \item Obras de arte, ciência e humor geram progresso de compressão aprendizável
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+% ============================================================
+\section{Arquiteturas Fundamentais}
+% ============================================================
+
+\begin{frame}{Ha \& Schmidhuber (2018): Arquitetura VMC}
+  \begin{center}
+    \begin{tikzpicture}[node distance=0.6cm, auto, >=latex]
+      \node[comp] (v) {Visão (V) \\ \footnotesize VAE};
+      \node[comp, below=of v] (m) {Memória (M) \\ \footnotesize RNN};
+      \node[comp, below=of m] (c) {Controlador (C) \\ \footnotesize Política};
+
+      \draw[->, wp-primary, thick] (v) -- (m);
+      \draw[->, wp-primary, thick] (m) -- (c);
+      \draw[->, wp-primary, thick] (c.east) .. controls +(right:0.8cm) and +(right:0.8cm) .. (v.east);
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{enumerate}
+    \item \textbf{Visão (V)}: VAE comprime observações $x_t$ em latente $z_t \sim \mathcal{N}(\mu_t, \sigma_t)$
+    \item \textbf{Memória (M)}: RNN prediz próximo estado latente $\hat{z}_{t+1} = f_\theta(z_t, a_t)$
+    \item \textbf{Controlador (C)}: Política $a_t = \pi(z_t)$ treinada no espaço latente
+  \end{enumerate}
+
+  \vspace{0.1em}
+  Planejamento por \textit{``sonhar''} --- \textit{rollouts} no espaço latente sem simulação em nível de pixel.
+\end{frame}
+
+\begin{frame}{RSSM --- \textit{Recurrent State-Space Model}}
+  \textbf{Hafner et al. (Dreamer)} --- Combina estados determinísticos e estocásticos:
+
+  \vspace{0.3em}
+  \begin{align}
+    h_t &= f_\phi(h_{t-1}, z_{t-1}, a_{t-1}) &&\text{(determinístico)} \\
+    z_t &\sim \mathcal{N}\bigl(\mu_\phi(h_t), \sigma_\phi(h_t)\bigr) &&\text{(estocástico)} \\
+    \hat{o}_t &= g_\phi(h_t, z_t) &&\text{(reconstrução)}
+  \end{align}
+
+  \vspace{0.3em}
+  \begin{itemize}
+    \item $h_t$ carrega dependências temporais de longo alcance
+    \item $z_t$ captura futuros multimodais
+    \item Evita colapso posterior de modelos puramente estocásticos
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{DreamerV2 e V3}
+  \begin{columns}
+    \begin{column}{0.48\textwidth}
+      \textbf{DreamerV2} (Hafner et al., 2021)
+      \begin{itemize}
+        \item Latentes \textbf{discretos} (categoriais) ao invés de Gaussianos
+        \item \textbf{KL balancing}: coeficientes separados para \textit{prior} e \textit{posterior}
+        \item Predição de recompensa \textit{two-hot}
+      \end{itemize}
+      \begin{equation}
+        z_t = \text{one-hot}(\argmax_k \pi_k) + \pi - \sg(\pi)
+      \end{equation}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{DreamerV3} (Hafner et al., 2023)
+      \begin{itemize}
+        \item Hiperparâmetros únicos para centenas de ambientes
+        \item \textbf{Predições Symlog}: $\symlog(x) = \text{sign}(x)\log(|x|+1)$
+        \item \textbf{Free bits}: regularizador KL que evita colapso
+        \item Predições normalizadas por estatísticas correntes
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{World Models Baseados em Transformers}
+% ============================================================
+
+\begin{frame}{IRIS --- \textit{Transformers are Sample Efficient World Models}}
+  \textbf{Micheli et al. (2023)} --- Substitui memória recorrente por transformers:
+
+  \vspace{0.5em}
+  \begin{center}
+    \begin{tikzpicture}[node distance=0.3cm and 0.6cm, auto, >=latex, font=\small]
+      \node[input] (obs) {$o_t$};
+      \node[box, right=of obs] (vq) {VQ-VAE};
+      \node[input, right=of vq] (tok) {$z_t$};
+      \node[box, right=of tok] (trans) {Transformer};
+      \node[input, right=of trans] (pred) {$\hat{z}_{t+1}$};
+      \node[box, right=of pred] (dec) {Decode};
+      \node[input, right=of dec] (out) {$\hat{o}_{t+1}$};
+
+      \draw[->, wp-primary, thick] (obs) -- (vq);
+      \draw[->, wp-primary, thick] (vq) -- (tok);
+      \draw[->, wp-primary, thick] (tok) -- (trans);
+      \draw[->, wp-primary, thick] (trans) -- (pred);
+      \draw[->, wp-primary, thick] (pred) -- (dec);
+      \draw[->, wp-primary, thick] (dec) -- (out);
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3em}
+  \begin{equation}
+    p(z_{t+1} \mid z_{\leq t}, a_{\leq t}) = \prod_{k=1}^K p(z_{t+1}^k \mid z_{< t+1}^k, z_{\leq t}, a_{\leq t})
+  \end{equation}
+
+  \vspace{0.3em}
+  \begin{itemize}
+    \item Observação $o_t$ tokenizada por VQ-VAE em códigos discretos $z_t$
+    \item Transformer autoregressivo prediz a próxima sequência de tokens
+    \item Eficiência amostral competitiva com métodos \textit{model-free}
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+\section{Aplicações}
+% ============================================================
+
+\begin{frame}{Aplicações de \textit{World Models}}
+  \begin{columns}
+    \begin{column}{0.32\textwidth}
+      \textbf{Robótica}
+      \begin{itemize}\small
+        \item \textit{DayDreamer}: DreamerV3 em robôs reais
+        \item Políticas treinadas na ``imaginação''
+        \item Mínima interação com o mundo físico
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \textbf{Direção Autônoma}
+      \begin{itemize}\small
+        \item Wayve: simulação de direção
+        \item Avaliação \textit{closed-loop} de políticas
+        \item Segurança: teste de cenários críticos sem risco real
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \textbf{RL Baseado em Modelo}
+      \begin{itemize}\small
+        \item \textit{Rollouts} alucinados
+        \item Eficiência amostral: ordens de grandeza
+        \item Planejamento ciente de incerteza (ensembles)
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Métricas de Avaliação}
+% ============================================================
+
+\begin{frame}{Métricas de Avaliação}
+  \centering
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Métrica} & \textbf{Descrição} \\
+    \midrule
+    \textbf{Prediction MSE} & Erro quadrático médio em nível de pixel ou latente \\
+    \textbf{Divergência KL} & Casamento entre \textit{prior} e \textit{posterior} latentes \\
+    \textbf{Acurácia de Planejamento} & Correlação entre trajetórias imaginadas e retornos reais \\
+    \textbf{Eficiência Amostral} & Passos de ambiente necessários para atingir \textit{threshold} de recompensa \\
+    \textbf{Gap de Generalização} & Queda de performance em variações não vistas do ambiente \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}
+
+% ============================================================
+\section{Problemas em Aberto}
+% ============================================================
+
+\begin{frame}{Problemas em Aberto}
+  \begin{description}
+    \item[Composicionalidade] Como construir \textit{world models} que combinam conceitos conhecidos para generalizar a cenários novos?
+    \item[Predição de Longo Horizonte] Erros de predição se acumulam quadraticamente --- difusão iterativa, atenção esparsa e separação hierárquica de escalas são soluções exploradas.
+    \item[Escalabilidade] Ambientes controlados (ViZDoom, CarRacing) $\rightarrow$ mundo real aberto com observações de alta dimensão.
+    \item[Grounding] Como manter significado consistente das representações latentes entre diferentes tarefas?
+    \item[Causalidade] Distinguir intervenção de observação para raciocínio contrafactual genuíno.
+  \end{description}
+\end{frame}
+
+% ============================================================
+\section{Conclusão}
+% ============================================================
+
+\begin{frame}{Conclusão}
+  \vspace{-0.8em}
+  \begin{block}{Trajetória}
+    \begin{center}
+      \begin{tikzpicture}[node distance=0.25cm, auto, >=latex, font=\tiny]
+        \node[era, minimum width=1.6cm, minimum height=0.35cm, font=\tiny] (craik) {1943: Craik};
+        \node[era, minimum width=1.6cm, minimum height=0.35cm, font=\tiny, below=of craik] (pred) {1999: Pred. Coding};
+        \node[era, minimum width=1.6cm, minimum height=0.35cm, font=\tiny, below=of pred] (wm) {2018: W. Models};
+        \node[era, minimum width=1.6cm, minimum height=0.35cm, font=\tiny, below=of wm] (dream) {2020: Dreamer};
+        \node[era, minimum width=1.6cm, minimum height=0.35cm, font=\tiny, below=of dream] (v2) {2021: DreamerV2};
+        \node[era, minimum width=1.6cm, minimum height=0.35cm, font=\tiny, below=of v2] (iris) {2023: IRIS / V3};
+
+        \draw[->, wp-muted, thick] (craik) -- (pred);
+        \draw[->, wp-muted, thick] (pred) -- (wm);
+        \draw[->, wp-primary, thick] (wm) -- (dream);
+        \draw[->, wp-primary, thick] (dream) -- (v2);
+        \draw[->, wp-primary, thick] (v2) -- (iris);
+      \end{tikzpicture}
+    \end{center}
+  \end{block}
+
+  \vspace{-0.5em}
+  \begin{itemize}\small
+    \item \textit{World models} representam a convergência de ciência cognitiva, teoria de controle e \textit{deep learning}
+    \item Desafios-chave: composicionalidade, longo horizonte, escalabilidade, causalidade
+    \item Papel central na próxima geração de sistemas inteligentes
+  \end{itemize}
+\end{frame}
+
+\end{document}

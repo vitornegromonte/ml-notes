@@ -1,0 +1,62 @@
+% GAN — Ciclo de Treinamento NATIVO TUFTE
+% Uso: \input{resources/gan/gan-training-cycle.tex}
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    >=latex,
+    phase/.style={draw=wp-text, fill=wp-code, rounded corners=2pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\small},
+    modelD/.style={draw=wp-primary, fill=wp-primary!10, rounded corners=2pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\small},
+    modelG/.style={draw=wp-accent, fill=wp-accent!10, rounded corners=2pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\small},
+    result/.style={draw=wp-light, fill=wp-bg, rounded corners=2pt, align=center, font=\footnotesize, text width=3.4cm},
+    conn/.style={->, thick, draw=wp-text!70}
+]
+
+% ── Cabeçalho / Loop Principal ────────────────────────────────
+\node[phase, font=\bfseries\small] (loop) at (3.0, 2.5) {Para cada\\época/iteração};
+\node[font=\small, wp-muted, anchor=south] at (3.0, 3.1) {Cada iteração:};
+
+% ── Coluna da Esquerda (Fase 1: Discriminador - wp-primary) ───
+\node[draw=wp-primary, fill=wp-primary!10, rounded corners=2pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\small] (p1) at (0.5, 1.0) {Fase 1:\\Treinar $D$};
+\node[modelD] (d1) at (0.5, -0.6) {Discriminador\\($\theta_D$)};
+\node[result, draw=wp-primary!40] (r1) at (0.5, -2.4) {\textbf{Maximizar:}\\$\log D(\mathbf{x}) + \log(1 - D(G(z)))$};
+
+\draw[conn, draw=wp-primary] (p1) -- (d1);
+\draw[conn, draw=wp-primary] (d1) -- (r1);
+\node[font=\tiny, wp-muted, below=2pt] at (r1.south) {$k$ passos};
+
+% ── Coluna da Direita (Fase 2: Gerador - wp-accent) ───────────
+\node[draw=wp-accent, fill=wp-accent!10, rounded corners=2pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\small] (p2) at (5.5, 1.0) {Fase 2:\\Treinar $G$};
+\node[modelG] (g1) at (5.5, -0.6) {Gerador\\($\theta_G$)};
+\node[result, draw=wp-accent!40] (r2) at (5.5, -2.4) {\textbf{Minimizar:}\\$\log(1 - D(G(z)))$\\\textit{ou maximizar} $\log D(G(z))$};
+
+\draw[conn, draw=wp-accent] (p2) -- (g1);
+\draw[conn, draw=wp-accent] (g1) -- (r2);
+
+% ── Seta de Divisão Inicial do Loop ───────────────────────────
+\draw[->, thick, draw=wp-muted, rounded corners=4pt] (loop.south) -- ++(0, -0.4) -| (p1.north);
+\draw[->, thick, draw=wp-muted, rounded corners=4pt] (loop.south) -- ++(0, -0.4) -| (p2.north);
+
+% ── Seta de Retorno / Feedback de Progresso (Sem Cruzamento) ──
+\draw[->, thick, draw=wp-muted, rounded corners=4pt] (r2.east) -- ++(0.7, 0) |- (loop.east);
+\node[font=\itshape\tiny, wp-muted, fill=white, anchor=mid, rotate=90] at (6.4, 0.1) {repetir até convergência};
+
+% =========================================================================
+% SEÇÃO DE CONVERGÊNCIA (Bloco de Saída Inferior)
+% =========================================================================
+\node[font=\footnotesize, align=center, text width=6.5cm] (obj) at (3.0, -4.3) {
+    \textbf{Objetivo Final:}\\
+    $G$ aprende a gerar dados tais que $p_g(\mathbf{x}) \approx p_{\mathrm{data}}(\mathbf{x})$
+};
+
+\node[draw=wp-text, fill=wp-code, rounded corners=2pt, font=\footnotesize, align=center, text width=6.2cm] (conv) at (3.0, -5.8) {
+    \textbf{Convergência Ideal:}\\
+    $D$ não consegue distinguir o real do falso\\
+    $D(\mathbf{x}) \approx D(G(z)) \approx 0.5$
+};
+
+\draw[->, draw=wp-muted, thick] (obj.south) -- (conv.north);
+
+\end{tikzpicture}
+\caption{Ciclo de treinamento de uma GAN. O processo alterna iterativamente entre a otimização do Discriminador $D$ (Fase 1) e do Gerador $G$ (Fase 2) até que o sistema atinja o equilíbrio de Nash, onde as amostras sintéticas tornam-se indistinguíveis das reais.}
+\label{fig:gan-training-cycle}
+\end{figure}

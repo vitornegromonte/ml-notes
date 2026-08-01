@@ -1,0 +1,225 @@
+\mode<presentation>
+
+% ===== Tufte-inspired Beamer Theme =====
+%
+% Principles applied:
+%   - High data-ink ratio: no decorative elements
+%   - No rounded corners, no shadows, no gradients
+%   - Warm paper background, terracotta accents
+%   - Thin rules only; blocks use left-margin rules (sidenote style)
+%   - Typography-driven layout
+
+% ===== Color Palette (from world_models.tex) =====
+\definecolor{wp-bg}{HTML}{FDF6EF}
+\definecolor{wp-text}{HTML}{2D1B0E}
+\definecolor{wp-primary}{HTML}{C24A3A}
+\definecolor{wp-accent}{HTML}{D4952E}
+\definecolor{wp-light}{HTML}{F0DECA}
+\definecolor{wp-muted}{HTML}{C4A88A}
+\definecolor{wp-dark}{HTML}{1A0F07}
+\definecolor{wp-code}{HTML}{FDF2E4}
+
+% ===== Base colors =====
+\setbeamercolor{normal text}{fg=wp-text, bg=wp-bg}
+\setbeamercolor{structure}{fg=wp-primary}
+\setbeamercolor{alerted text}{fg=wp-accent}
+
+% ===== Frame title =====
+\setbeamercolor{frametitle}{fg=wp-text, bg=}
+\setbeamerfont{frametitle}{series=\bfseries, size=\large}
+\setbeamercolor{framesubtitle}{fg=wp-muted}
+
+% ===== Title page =====
+\setbeamercolor{title}{fg=wp-text}
+\setbeamercolor{subtitle}{fg=wp-muted}
+\setbeamercolor{author}{fg=wp-text}
+\setbeamercolor{institute}{fg=wp-muted}
+\setbeamercolor{date}{fg=wp-muted}
+
+% ===== Block environments (Tufte-style: left rule, no fill) =====
+\setbeamercolor{block title}{fg=wp-text, bg=}
+\setbeamercolor{block body}{fg=wp-text, bg=}
+\setbeamercolor{block title alerted}{fg=wp-accent, bg=}
+\setbeamercolor{block body alerted}{fg=wp-text, bg=}
+\setbeamercolor{block title example}{fg=wp-text, bg=}
+\setbeamercolor{block body example}{fg=wp-text, bg=}
+
+% ===== Itemize =====
+\setbeamercolor{itemize item}{fg=wp-primary}
+\setbeamercolor{itemize subitem}{fg=wp-muted}
+\setbeamercolor{enumerate item}{fg=wp-text}
+\setbeamercolor{enumerate subitem}{fg=wp-muted}
+\setbeamercolor{description item}{fg=wp-primary}
+
+% ===== Bibliography =====
+\setbeamercolor{bibliography entry author}{fg=wp-text}
+\setbeamercolor{bibliography entry title}{fg=wp-primary}
+\setbeamercolor{bibliography entry location}{fg=wp-muted}
+\setbeamercolor{bibliography item}{fg=wp-primary}
+
+% ===== TOC =====
+\setbeamercolor{section in toc}{fg=wp-text}
+\setbeamercolor{subsection in toc}{fg=wp-muted}
+
+% ===== Footer =====
+\setbeamercolor{page number in foot}{fg=wp-muted}
+
+% ===== Captions =====
+\setbeamercolor{caption name}{fg=wp-primary}
+
+% ===== Font settings =====
+\setbeamerfont{title}{series=\bfseries, size=\huge}
+\setbeamerfont{subtitle}{series=\mdseries, size=\large}
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{block title}{series=\bfseries, size=\normalsize}
+\setbeamerfont{block body}{size=\normalsize}
+\setbeamerfont{section in toc}{size=\normalsize}
+\setbeamerfont{subsection in toc}{size=\small}
+
+% ===== Remove all navigation =====
+\setbeamertemplate{navigation symbols}{}
+
+% ===== Frame title: left-aligned, thin rule below =====
+\setbeamertemplate{frametitle}{
+  \vspace{0.6em}
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth, leftskip=1em, rightskip=1em]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle\par
+    \ifx\insertframesubtitle\@empty\else
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle\par}
+    \fi
+    \vspace{-0.1em}
+    \textcolor{wp-primary}{\rule{0.25\paperwidth}{0.4pt}}
+  \end{beamercolorbox}
+  \vspace{0.5em}
+}
+
+% ===== Footer: just page number, flush right =====
+\setbeamertemplate{footline}{
+  \hfill\usebeamerfont{page number in foot}\usebeamercolor[fg]{page number in foot}\insertframenumber{}\hspace{1em}
+  \vspace{0.5em}
+}
+
+% ===== Title page: clean, centered =====
+\defbeamertemplate*{title page}{tufte}{
+  \vspace{2em}
+  \begin{center}
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+    \vspace{0.6em}
+    \textcolor{wp-primary}{\rule{0.4\paperwidth}{0.5pt}}\par
+    \vspace{0.5em}
+    {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}
+    \vspace{2em}
+    {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}
+    \vspace{0.3em}
+    {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}
+    \vspace{0.3em}
+    {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par}
+  \end{center}
+}
+
+% ===== Section page: minimal =====
+\AtBeginSection[]{
+  \begin{frame}[plain]
+    \vfill
+    \begin{center}
+      \textcolor{wp-primary}{\normalsize\insertsectionnumber}
+      \vspace{0.2em}
+      \par{\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertsectionhead}
+      \par\vspace{0.4em}
+      \textcolor{wp-primary}{\rule{0.2\paperwidth}{0.4pt}}
+    \end{center}
+    \vfill
+  \end{frame}
+}
+
+% ===== Tufte-style block: left vertical rule + content =====
+\defbeamertemplate{block begin}{tufte}{
+  \par\vspace{0.5em}
+  \leftskip=1em
+  \rightskip=1em
+  \hspace*{-0.6em}%
+  \textcolor{wp-primary}{\rule[0.3em]{0.08em}{1.3em}}%
+  \hspace{0.4em}%
+  \usebeamerfont{block title}\usebeamercolor[fg]{block title}\insertblocktitle\par
+  \vspace{-0.3em}
+  \hspace*{-0.6em}%
+  \textcolor{wp-light}{\rule[0.1em]{\linewidth}{0.3pt}}\par
+  \vspace{0.2em}
+  \hspace*{0.5em}%
+  \usebeamerfont{block body}\usebeamercolor[fg]{block body}
+  \vspace{-0.2em}
+}
+\defbeamertemplate{block end}{tufte}{
+  \par\vspace{0.3em}
+}
+
+\defbeamertemplate{block alerted begin}{tufte}{
+  \par\vspace{0.5em}
+  \leftskip=1em
+  \rightskip=1em
+  \hspace*{-0.6em}%
+  \textcolor{wp-accent}{\rule[0.3em]{0.08em}{1.3em}}%
+  \hspace{0.4em}%
+  \usebeamerfont{block title}\usebeamercolor[fg]{block title alerted}\insertblocktitle\par
+  \vspace{-0.3em}
+  \hspace*{-0.6em}%
+  \textcolor{wp-accent!30}{\rule[0.1em]{\linewidth}{0.3pt}}\par
+  \vspace{0.2em}
+  \hspace*{0.5em}%
+  \usebeamerfont{block body}\usebeamercolor[fg]{block body}
+  \vspace{-0.2em}
+}
+\defbeamertemplate{block alerted end}{tufte}{
+  \par\vspace{0.3em}
+}
+
+\defbeamertemplate{block example begin}{tufte}{
+  \par\vspace{0.5em}
+  \leftskip=1em
+  \rightskip=1em
+  \hspace*{-0.6em}%
+  \textcolor{wp-muted}{\rule[0.3em]{0.08em}{1.3em}}%
+  \hspace{0.4em}%
+  \usebeamerfont{block title}\usebeamercolor[fg]{block title example}\insertblocktitle\par
+  \vspace{-0.3em}
+  \hspace*{-0.6em}%
+  \textcolor{wp-light}{\rule[0.1em]{\linewidth}{0.3pt}}\par
+  \vspace{0.2em}
+  \hspace*{0.5em}%
+  \usebeamerfont{block body}\usebeamercolor[fg]{block body}
+  \vspace{-0.2em}
+}
+\defbeamertemplate{block example end}{tufte}{
+  \par\vspace{0.3em}
+}
+
+% ===== Apply Tufte block templates =====
+\setbeamertemplate{block begin}[tufte]
+\setbeamertemplate{block end}[tufte]
+\setbeamertemplate{block alerted begin}[tufte]
+\setbeamertemplate{block alerted end}[tufte]
+\setbeamertemplate{block example begin}[tufte]
+\setbeamertemplate{block example end}[tufte]
+
+% ===== Bibliography =====
+\setbeamertemplate{bibliography item}{\textcolor{wp-primary}{\rule{0.3em}{0.3em}}}
+
+% ===== TOC styling: simple, no icons =====
+\setbeamertemplate{section in toc}{\hspace{0.5em}\textcolor{wp-primary}{\inserttocsectionnumber.}~\inserttocsection\par}
+\setbeamertemplate{subsection in toc}{\hspace{2em}\textcolor{wp-muted}{\inserttocsubsectionnumber.}~\inserttocsubsection\par}
+
+% ===== Enumerate: plain numbers =====
+\setbeamertemplate{enumerate items}[default]
+
+% ===== Itemize: thin rule (Tufte's preferred bullet) =====
+\setbeamertemplate{itemize item}{\textcolor{wp-primary}{\rule{0.4em}{0.4pt}}}
+\setbeamertemplate{itemize subitem}{\textcolor{wp-muted}{\rule{0.3em}{0.3pt}}}
+\setbeamertemplate{itemize subsubitem}{\textcolor{wp-light}{\rule{0.2em}{0.2pt}}}
+
+% ===== Captions =====
+\setbeamertemplate{caption}{\usebeamerfont{caption}\usebeamercolor[fg]{caption name}\insertcaption\par}
+
+\mode<all>

@@ -1,0 +1,90 @@
+% Style Transfer — Loop de Otimização (Layout em Carrossel Horário)
+% Uso: \input{resources/style-transfer/optimization-loop.tex}
+\begin{figure*}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=latex,
+    box/.style={draw=wp-text, fill=wp-light, rounded corners=2pt, minimum width=2.5cm, minimum height=1.0cm, align=center, font=\small},
+    proc/.style={draw=wp-primary, fill=wp-primary!10, rounded corners=2pt, minimum width=2.6cm, minimum height=1.2cm, align=center, font=\small},
+    img/.style={draw=wp-text, fill=wp-code, rounded corners=2pt, minimum width=1.8cm, minimum height=1.8cm, align=center, font=\small},
+    conn/.style={->, draw=wp-primary, thick},
+    label/.style={font=\footnotesize, text=wp-muted},
+    tuftebox/.style={draw=wp-light, fill=wp-code, rounded corners=2pt, align=center}
+]
+
+% =========================================================================
+% ESTÁGIO 1: INICIALIZAÇÃO EXTERNA (Fora do loop principal)
+% =========================================================================
+\node[img] (start) at (-3.5, 3.0) {Ruído\\$\mathcal{N}(0,I)$};
+\node[proc] (init) at (0, 3.0) {Inicializar\\$\mathcal{G} \leftarrow$ ruído};
+
+\draw[conn] (start) -- (init);
+
+% =========================================================================
+% ESTÁGIO 2: FLUXO SUPERIOR (Esquerda para a Direita)
+% =========================================================================
+\node[proc] (forward) at (3.8, 3.0) {1. Forward pass\\$\mathcal{G}$ pela CNN};
+\node[proc] (features) at (8.0, 3.0) {2. Extrair\\$F^l(\mathcal{G})$ e $G^l(\mathcal{G})$};
+\node[proc] (targets)  at (12.2, 3.0) {Referências\\$F^l(\mathcal{C})$ e $G^l(\mathcal{S})$};
+
+\draw[conn] (init) -- (forward);
+\draw[conn] (forward) -- (features);
+\draw[conn] (features) -- (targets);
+
+\node[label, above=1pt] at (features.north) {da imagem gerada};
+\node[label, above=1pt] at (targets.north) {pré-calculados};
+
+
+% =========================================================================
+% ESTÁGIO 3: DESCIDA E RETORNO INFERIOR (Direita para a Esquerda)
+% =========================================================================
+\node[proc, fill=wp-accent!10, draw=wp-accent] (loss) at (12.2, -1.0) {3. Calcular perda\\$\mathcal{L}_{\mathrm{total}}$};
+\node[proc] (backward) at (8.0, -1.0) {4. Backward pass\\$\nabla_{\mathcal{G}} \mathcal{L}_{\mathrm{total}}$};
+\node[proc, fill=wp-primary!15, draw=wp-primary] (update) at (3.8, -1.0) {5. Atualizar\\$\mathcal{G} \leftarrow \mathcal{G} - \eta \nabla_{\mathcal{G}} \mathcal{L}$};
+
+% Descida vertical na extrema direita
+\draw[conn] (targets.south) -- (loss.north);
+
+% Fluxo de retorno para a esquerda na base
+\draw[conn] (loss) -- (backward);
+\draw[conn] (backward) -- (update);
+
+
+% =========================================================================
+% ESTÁGIO 4: CIRCUITO DE RETORNO DO LOOP (Fechamento à Esquerda)
+% =========================================================================
+\node[draw=wp-text, diamond, fill=wp-code, aspect=1.8, minimum width=2.0cm, font=\small] (decide) at (0, -1.0) {Convergiu?};
+\node[img, fill=wp-accent!15, draw=wp-accent] (output) at (-3.5, -1.0) {Imagem\\Gerada\\$\mathcal{G}^*$};
+
+\draw[conn] (update) -- (decide);
+\draw[->, draw=wp-accent, very thick] (decide) -- node[above, font=\small, text=wp-text] {sim} (output);
+
+% O FECHAMENTO DO ANEL: "Não" sobe em linha reta vertical direto para o Forward Pass
+\draw[->, draw=wp-muted, thick, rounded corners=6pt] (decide.north) -- (init.south) -- (forward.west);
+\node[text=wp-text, font=\footnotesize, anchor=west] at (0.2, 1.0) {não (iteração $t+1$)};
+
+
+% =========================================================================
+% CAIXAS DE CONTEXTO E METADADOS METODOLÓGICOS (Zonas Vazias Limpas)
+% =========================================================================
+% Central inferior
+\node[draw=wp-light, fill=wp-code, rounded corners=2pt, minimum width=3.0cm, minimum height=0.6cm, font=\small] (iter) at (6.0, 1.0) {Iteração $t$ de $T$};
+\draw[->, draw=wp-muted, thick, dashed] (update.north) |- (iter.west);
+
+\node[tuftebox, minimum width=6.5cm, minimum height=0.6cm, inner sep=4pt] at (12.2, 1.0) {
+    \footnotesize \textbf{Evolução:} \ $\mathcal{G}_0 \rightarrow \mathcal{G}_1 \rightarrow \mathcal{G}_2 \rightarrow \cdots \rightarrow \mathcal{G}_T$
+};
+
+% Bloco de fórmulas suspenso no centro-topo sem atrapalhar setas
+\node[tuftebox, minimum width=5.8cm, minimum height=1.3cm, text width=5.5cm, font=\footnotesize] at (6.0, 4.8) {
+    \textbf{\color{wp-primary}Mecanismo Algorítmico}\\[2pt]
+    $\mathcal{L}_{\mathrm{total}} = \alpha\mathcal{L}_{\mathrm{cont}} + \beta\sum w_l\mathcal{L}_{\mathrm{est}}^l$ \\[1pt]
+    $\mathbf{\mathcal{G}}_{t+1} = \mathbf{\mathcal{G}}_t - \eta \nabla_{\mathbf{\mathcal{G}}_t}\mathcal{L}_{\mathrm{total}}$
+};
+
+\end{tikzpicture}
+}
+\caption{Loop de otimização iterativo do Style Transfer organizado em anel de fluxo horário.}
+\label{fig:optimization-loop}
+\end{figure*}

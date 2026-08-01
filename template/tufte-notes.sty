@@ -1,0 +1,103 @@
+% tufte-notes.sty — shared style package for Tufte-style ML notes
+% Usage: \usepackage[theorems]{tufte-notes}
+\ProvidesPackage{tufte-notes}[2026/06/24 Tufte-style ML notes theme]
+
+% ===== Package options =====
+\newif\iftufte@thm\tufte@thmfalse
+\newif\iftufte@code\tufte@codefalse
+\DeclareOption{theorems}{\tufte@thmtrue}
+\DeclareOption{code}{\tufte@codetrue}
+\ProcessOptions\relax
+
+% ===== Required base packages =====
+\RequirePackage{pgfplots}
+\RequirePackage[dvipsnames]{xcolor}
+\RequirePackage{ulem}
+\RequirePackage{subcaption}
+\RequirePackage{amssymb, amsmath, tabularx, siunitx}
+\RequirePackage{algorithm}
+\RequirePackage{makecell}
+\RequirePackage{amsfonts}
+\RequirePackage{booktabs}
+
+\pgfplotsset{compat = newest}
+
+% ===== TikZ =====
+\RequirePackage{tikz}
+\usetikzlibrary{shadings}
+\usetikzlibrary{calc, arrows.meta}
+\usetikzlibrary{shapes.misc}
+\usetikzlibrary{positioning}
+\RequirePackage[most]{tcolorbox}
+\usepgfplotslibrary{colormaps, patchplots}
+
+% ===== Conditional packages =====
+\iftufte@thm
+  \RequirePackage{thmtools}
+  \RequirePackage{enumitem}
+  \RequirePackage{mathtools}
+  \RequirePackage{bm}
+\fi
+
+\iftufte@code
+  \RequirePackage{listings}
+  \RequirePackage{bbm}
+\fi
+
+% ===== Color palette =====
+\definecolor{wp-bg}{HTML}{FDF6EF}
+\definecolor{wp-text}{HTML}{2D1B0E}
+\definecolor{wp-primary}{HTML}{C24A3A}
+\definecolor{wp-accent}{HTML}{D4952E}
+\definecolor{wp-light}{HTML}{F0DECA}
+\definecolor{wp-muted}{HTML}{C4A88A}
+\definecolor{wp-dark}{HTML}{1A0F07}
+\definecolor{wp-code}{HTML}{FDF2E4}
+
+% ===== Theme application =====
+\pagecolor{wp-bg}
+\color{wp-text}
+\hypersetup{colorlinks=true, linkcolor=wp-primary, urlcolor=wp-accent}
+
+% ===== Common tikz styles =====
+\tikzset{basic/.style={draw, text width=1em, text badly centered}}
+\tikzset{input/.style={basic, circle}}
+\tikzset{weights/.style={basic, rectangle}}
+\tikzset{functions/.style={basic, circle}}
+
+% ===== Cover page =====
+\newcommand{\coverpage}{%
+  \thispagestyle{empty}%
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[wp-bg] (current page.south west) rectangle (current page.north east);
+    \node[inner sep=0] at (current page.center) {%
+      \includegraphics[width=0.9\textwidth]{cover/attractor-image.png}%
+    };
+    \node[align=center, text=wp-text, yshift=-8cm] at (current page.center) {%
+      \bfseries\Huge \@title \\[0.5em]
+      \normalsize \@author \\[0.5em]
+      \normalsize \@date
+    };
+  \end{tikzpicture}%
+  \newpage
+}
+
+% ===== Theorem environments (when theorems option is used) =====
+\iftufte@thm
+  \declaretheorem[style=plain, name=Definition, numberwithin=section]{defn}
+  \declaretheorem[style=plain, name=Theorem, numberwithin=section]{thm}
+  \declaretheorem[style=plain, name=Lemma, numberwithin=section]{lem}
+  \declaretheorem[style=remark, name=Example, numberwithin=section]{exmp}
+  \declaretheorem[style=remark, name=Remark, numberwithin=section]{remark}
+  \declaretheorem[style=plain, name=Property, numberwithin=section]{prop}
+  \declaretheorem[style=plain, name=Law, numberwithin=section]{law}
+
+  \DeclareMathOperator*{\argmax}{argmax}
+  \DeclareMathOperator*{\argmin}{argmin}
+  \DeclareMathOperator{\E}{\mathbb{E}}
+  \DeclareMathOperator{\Var}{\mathbb{V}}
+  \DeclareMathOperator{\Cov}{\mathbb{C}\text{ov}}
+  \DeclareMathOperator{\KL}{KL}
+\fi
+
+\endinput
